@@ -260,30 +260,32 @@ class ChatBot extends Component {
   };
 
   evaluateExpression = evalExpression => {
-    const prevSteps = {};
-    const steps = {};
+    const previousValues = {};
+    const values = {};
 
     const { previousSteps, renderedSteps, currentStep } = this.state;
     previousSteps.forEach(step => {
       if (step.value != null) {
-        prevSteps[step.id] = deepCopy(step.value);
+        previousValues[step.id] = deepCopy(step.value);
       }
     });
-    if (currentStep.value != null) prevSteps[currentStep.id] = deepCopy(currentStep.value);
+    if (currentStep.value != null) previousValues[currentStep.id] = deepCopy(currentStep.value);
 
     // eslint-disable-next-line no-eval
     eval(evalExpression);
 
     // append user assigned values into chat
-    steps.forEach((step, id) => {
-      const newStep = {
-        '@class': '.ValueStep',
-        id,
-        value: step
-      };
-      previousSteps.push(newStep);
-      renderedSteps.push(newStep);
-    });
+    for (const id in values) {
+      if (Object.prototype.hasOwnProperty.call(values, id)) {
+        const newStep = {
+          '@class': '.ValueStep',
+          id,
+          value: values[id]
+        };
+        previousSteps.push(newStep);
+        renderedSteps.push(newStep);
+      }
+    }
 
     this.setState({ previousSteps, renderedSteps });
   };
