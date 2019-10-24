@@ -24,7 +24,8 @@ import {
   splitByFirstPeriod,
   insertIntoObjectByPath,
   isVariable,
-  makeVariable
+  makeVariable,
+  deepCopy
 } from './utils';
 import { speakFn } from './speechSynthesis';
 
@@ -289,12 +290,17 @@ class ChatBot extends Component {
           const newStep = {
             '@class': '.ValueStep',
             id: parentStep.id,
-            value: JSON.parse(JSON.stringify(parentStep.value))
+            value: deepCopy(parentStep.value)
           };
           insertIntoObjectByPath(newStep.value, remaining, data.value);
-          const lastStep = previousSteps.pop();
+
+          // put newStep in second last position as some code later is going to replace last current element with updated current element
+          const lastStepOfPreviousSteps = previousSteps.pop();
+          const lastStepOfRenderedSteps = renderedSteps.pop();
           previousSteps.push(newStep);
-          if (lastStep) previousSteps.push(lastStep);
+          renderedSteps.push(newStep);
+          if (lastStepOfPreviousSteps) previousSteps.push(lastStepOfPreviousSteps);
+          if (lastStepOfRenderedSteps) renderedSteps.push(lastStepOfRenderedSteps);
         }
       } else {
         currentStep.value = data.value;
@@ -549,10 +555,11 @@ class ChatBot extends Component {
           const newStep = {
             '@class': '.ValueStep',
             id: parentStep.id,
-            value: JSON.parse(JSON.stringify(parentStep.value))
+            value: deepCopy(parentStep.value)
           };
           insertIntoObjectByPath(newStep.value, remaining, inputValue);
           previousSteps.push(newStep);
+          renderedSteps.push(newStep);
         }
       }
       currentStep = Object.assign({}, defaultUserSettings, currentStep, step, this.metadata(step));
@@ -641,6 +648,11 @@ class ChatBot extends Component {
     const steps = this.generateRenderedStepsById();
     const previousStep = index > 0 ? renderedSteps[index - 1] : {};
     const previousSteps = index > 0 ? this.generateStepsById(renderedSteps.slice(0, index)) : {};
+
+    // .ValueStep's should not be rendered
+    if (step['@class'] === '.ValueStep') {
+      return null;
+    }
 
     if (component && !asMessage) {
       return (
