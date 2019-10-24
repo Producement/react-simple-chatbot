@@ -282,7 +282,7 @@ class ChatBot extends Component {
     if (data && data.value) {
       if (isNestedVariable(currentStep.id)) {
         const [parentObjectName, remaining] = splitByFirstPeriod(currentStep.id);
-        const parentStep = this.findLastStepWithId(previousSteps, parentObjectName);
+        const parentStep = this.findLastStepWithId(renderedSteps, parentObjectName);
         if (!parentStep) {
           // eslint-disable-next-line no-console
           console.error('Error: Could not find parent step of the nested variable');
@@ -321,7 +321,7 @@ class ChatBot extends Component {
       delete currentStep.options;
 
       // Find the last state and append it to the new one
-      const lastSameSteps = previousSteps.filter(step => step.id === currentStep.id);
+      const lastSameSteps = renderedSteps.filter(step => step.id === currentStep.id);
       const lastSameStep = lastSameSteps.length > 1 && lastSameSteps[lastSameSteps.length - 2];
       if (typeof lastSameStep.value === 'object' && typeof option.value === 'object') {
         option.value = {
@@ -547,7 +547,7 @@ class ChatBot extends Component {
 
       if (isNestedVariable(currentStep.id)) {
         const [parentObjectName, remaining] = splitByFirstPeriod(currentStep.id);
-        const parentStep = this.findLastStepWithId(previousSteps, parentObjectName);
+        const parentStep = this.findLastStepWithId(renderedSteps, parentObjectName);
         if (!parentStep) {
           // eslint-disable-next-line no-console
           console.error('Error: Could not find parent step of the nested variable');
