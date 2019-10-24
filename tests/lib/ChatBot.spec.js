@@ -848,6 +848,13 @@ describe('ChatBot', () => {
             id: 'display',
             evalExpression: 'values["{salary}"] = "$" + previousValues["{salary}"]',
             message: 'Your salary is {salary}',
+            trigger: 'using-objects'
+          },
+          {
+            '@class': '.TextStep',
+            id: 'using-objects',
+            evalExpression: 'values["{person}"] = { name: "FirstName LastName", age: 34 }',
+            message: 'Your name is {person.name} and you are {person.age} years old',
             end: true
           }
         ]}
@@ -874,6 +881,11 @@ describe('ChatBot', () => {
     it('should update the entered value', () => {
       wrapper.update();
       expect(wrapper.text()).to.contain('Your salary is $1000');
+    });
+
+    it('should evaluate evalExpression before rendering step', () => {
+      wrapper.update();
+      expect(wrapper.text()).to.contain('Your name is FirstName LastName and you are 34 years old');
     });
   });
 });
