@@ -846,7 +846,7 @@ describe('ChatBot', () => {
           {
             '@class': '.TextStep',
             id: 'display',
-            evalExpression: 'steps["{salary}"].value = "$" + steps["{salary}"].value',
+            evalExpression: 'steps["{salary}"] = "$" + prevSteps["{salary}"]',
             message: 'Your salary is {salary}',
             end: true
           }
