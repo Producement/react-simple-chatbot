@@ -848,11 +848,24 @@ describe('ChatBot', () => {
             id: 'display',
             evalExpression: 'values["{salary}"] = "$" + previousValues["{salary}"]',
             message: 'Your salary is {salary}',
-            trigger: 'using-objects'
+            trigger: 'assign-variable-without-optionstep'
           },
           {
             '@class': '.TextStep',
-            id: 'using-objects',
+            id: 'assign-variable-without-optionstep',
+            evalExpression: 'values["{variable}"] = "value"',
+            message: 'Assigning value to variable',
+            trigger: 'display-variable'
+          },
+          {
+            '@class': '.TextStep',
+            id: 'display-variable',
+            message: 'The variable is {variable}',
+            trigger: 'check-evalExpression-precedence'
+          },
+          {
+            '@class': '.TextStep',
+            id: 'check-evalExpression-precedence',
             evalExpression: 'values["{person}"] = { name: "FirstName LastName", age: 34 }',
             message: 'Your name is {person.name} and you are {person.age} years old',
             end: true
@@ -881,6 +894,11 @@ describe('ChatBot', () => {
     it('should update the entered value', () => {
       wrapper.update();
       expect(wrapper.text()).to.contain('Your salary is $1000');
+    });
+
+    it('should allow new variables to be created', () => {
+      wrapper.update();
+      expect(wrapper.text()).to.contain('The variable is value');
     });
 
     it('should evaluate evalExpression before rendering step', () => {
