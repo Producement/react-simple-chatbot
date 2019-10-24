@@ -286,7 +286,15 @@ class ChatBot extends Component {
           // eslint-disable-next-line no-console
           console.error('Error: Could not find parent step of the nested variable');
         } else {
-          insertIntoObjectByPath(parentStep.value, remaining, data.value);
+          const newStep = {
+            '@class': '.ValueStep',
+            id: parentStep.id,
+            value: JSON.parse(JSON.stringify(parentStep.value))
+          };
+          insertIntoObjectByPath(newStep.value, remaining, data.value);
+          const lastStep = previousSteps.pop();
+          previousSteps.push(newStep);
+          if (lastStep) previousSteps.push(lastStep);
         }
       } else {
         currentStep.value = data.value;
@@ -538,7 +546,13 @@ class ChatBot extends Component {
           // eslint-disable-next-line no-console
           console.error('Error: Could not find parent step of the nested variable');
         } else {
-          insertIntoObjectByPath(parentStep.value, remaining, inputValue);
+          const newStep = {
+            '@class': '.ValueStep',
+            id: parentStep.id,
+            value: JSON.parse(JSON.stringify(parentStep.value))
+          };
+          insertIntoObjectByPath(newStep.value, remaining, inputValue);
+          previousSteps.push(newStep);
         }
       }
       currentStep = Object.assign({}, defaultUserSettings, currentStep, step, this.metadata(step));
