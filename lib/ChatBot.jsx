@@ -264,7 +264,7 @@ class ChatBot extends Component {
     const values = {};
 
     const { previousSteps, renderedSteps, currentStep } = this.state;
-    previousSteps.forEach(step => {
+    renderedSteps.forEach(step => {
       if (step.value != null) {
         previousValues[step.id] = deepCopy(step.value);
       }
@@ -667,7 +667,7 @@ class ChatBot extends Component {
     const previousStep = index > 0 ? renderedSteps[index - 1] : {};
     const previousSteps = index > 0 ? this.generateStepsById(renderedSteps.slice(0, index)) : {};
 
-    // .ValueStep's should not be rendered
+    // '.ValueStep's should not be rendered
     if (step['@class'] === '.ValueStep') {
       return null;
     }
