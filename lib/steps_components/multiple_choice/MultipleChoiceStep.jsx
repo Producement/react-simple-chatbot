@@ -8,13 +8,13 @@ import MultipleChoiceStepContainer from './MultipleChoiceStepContainer';
 class MultipleChoiceStep extends Component {
   state = {
     // eslint-disable-next-line react/destructuring-assignment
-    choices: this.props.step.choices.map(choice => Object.assign({}, choice, { checked: false }))
+    choices: this.props.step.choices.map(choice => Object.assign({}, choice, { selected: false }))
   };
 
   onChoiceClick = choice => {
     const { choices } = this.state;
 
-    choices.find(each => JSON.stringify(each) === JSON.stringify(choice)).checked = true;
+    choices.find(each => JSON.stringify(each) === JSON.stringify(choice)).selected = true;
 
     this.setState({ choices });
   };
@@ -23,7 +23,7 @@ class MultipleChoiceStep extends Component {
     const { triggerNextStep } = this.props;
     const { choices } = this.state;
 
-    triggerNextStep(choices.filter(choice => choice.checked));
+    triggerNextStep(choices.filter(choice => choice.selected));
   };
 
   renderChoice = choice => {
@@ -39,6 +39,7 @@ class MultipleChoiceStep extends Component {
           user={user}
           onClick={() => this.onChoiceClick(choice)}
         >
+          {choice.selected ? '✓' : ''}
           {label}
         </ChoiceElement>
       </Choice>
@@ -54,9 +55,11 @@ class MultipleChoiceStep extends Component {
           {Object.keys(choices)
             .map(key => choices[key])
             .map(this.renderChoice)}
-          <button type="button" onClick={this.onSubmitClick}>
-            Confirm
-          </button>
+          <Choice className="rsc-mcs-submit">
+            <ChoiceElement className="rsc-mcs-submit-element" onClick={this.onSubmitClick()}>
+              ✓
+            </ChoiceElement>
+          </Choice>
         </MultipleChoice>
       </MultipleChoiceStepContainer>
     );
