@@ -6,24 +6,38 @@ import MultipleChoice from './MultipleChoice';
 import MultipleChoiceStepContainer from './MultipleChoiceStepContainer';
 
 class MultipleChoiceStep extends Component {
-  onOptionClick = option => {
-    const { triggerNextStep } = this.props;
-
-    triggerNextStep(option);
+  state = {
+    // eslint-disable-next-line react/destructuring-assignment
+    choices: this.props.step.choices.map(choice => Object.assign({}, choice, { checked: false }))
   };
 
-  renderOption = option => {
-    const { bubbleOptionStyle, step } = this.props;
+  onChoiceClick = choice => {
+    const { choices } = this.state;
+
+    choices.find(each => JSON.stringify(each) === JSON.stringify(choice)).checked = true;
+
+    this.setState({ choices });
+  };
+
+  onSubmitClick = () => {
+    const { triggerNextStep } = this.props;
+    const { choices } = this.state;
+
+    triggerNextStep(choices.filter(choice => choice.checked));
+  };
+
+  renderChoice = choice => {
+    const { bubbleChoiceStyle, step } = this.props;
     const { user } = step;
-    const { label } = option;
+    const { label } = choice;
 
     return (
-      <Choice key={JSON.stringify(option)} className="rsc-os-option">
+      <Choice key={JSON.stringify(choice)} className="rsc-mcs-choice">
         <ChoiceElement
-          className="rsc-os-option-element"
-          style={bubbleOptionStyle}
+          className="rsc-mcs-choice-element"
+          style={bubbleChoiceStyle}
           user={user}
-          onClick={() => this.onOptionClick(option)}
+          onClick={() => this.onChoiceClick(choice)}
         >
           {label}
         </ChoiceElement>
@@ -32,15 +46,15 @@ class MultipleChoiceStep extends Component {
   };
 
   render() {
-    const { step } = this.props;
-    const { options } = step;
+    const { choices } = this.state;
 
     return (
-      <MultipleChoiceStepContainer className="rsc-os">
-        <MultipleChoice className="rsc-os-options">
-          {Object.keys(options)
-            .map(key => options[key])
-            .map(this.renderOption)}
+      <MultipleChoiceStepContainer className="rsc-mcs">
+        <MultipleChoice className="rsc-mcs-choices">
+          {Object.keys(choices)
+            .map(key => choices[key])
+            .map(this.renderChoice)}
+          <button onClick={this.onSubmitClick}>Confirm</button>
         </MultipleChoice>
       </MultipleChoiceStepContainer>
     );
@@ -48,7 +62,7 @@ class MultipleChoiceStep extends Component {
 }
 
 MultipleChoiceStep.propTypes = {
-  bubbleOptionStyle: PropTypes.objectOf(PropTypes.any).isRequired,
+  bubbleChoiceStyle: PropTypes.objectOf(PropTypes.any).isRequired,
   step: PropTypes.objectOf(PropTypes.any).isRequired,
   triggerNextStep: PropTypes.func.isRequired
 };
