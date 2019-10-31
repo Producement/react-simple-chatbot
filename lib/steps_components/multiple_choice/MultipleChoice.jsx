@@ -5,4 +5,4 @@ const MultipleChoice = styled.ul`
   padding: 0 6px;
 `;
 
-export default Options;
+export default MultipleChoice;

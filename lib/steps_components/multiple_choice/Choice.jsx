@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import { scale } from '../../common/animations';
 
-const Option = styled.li`
+const Choice = styled.li`
   animation: ${scale} 0.3s ease forwards;
   cursor: pointer;
   display: inline-block;
@@ -9,4 +9,4 @@ const Option = styled.li`
   transform: scale(0);
 `;
 
-export default Option;
+export default Choice;

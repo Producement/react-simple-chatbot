@@ -20,8 +20,8 @@ const ChoiceElement = styled.button`
   }
 `;
 
-OptionElement.defaultProps = {
+ChoiceElement.defaultProps = {
   theme: defaultTheme
 };
 
-export default OptionElement;
+export default ChoiceElement;

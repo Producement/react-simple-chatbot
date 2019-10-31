@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import Option from './Choice';
-import OptionElement from './ChoiceElement';
-import Options from './MultipleChoice';
-import OptionsStepContainer from './MultipleChoiceStepContainer';
+import Choice from './Choice';
+import ChoiceElement from './ChoiceElement';
+import MultipleChoice from './MultipleChoice';
+import MultipleChoiceStepContainer from './MultipleChoiceStepContainer';
 
 class MultipleChoiceStep extends Component {
   onOptionClick = option => {
@@ -18,16 +18,16 @@ class MultipleChoiceStep extends Component {
     const { label } = option;
 
     return (
-      <Option key={JSON.stringify(option)} className="rsc-os-option">
-        <OptionElement
+      <Choice key={JSON.stringify(option)} className="rsc-os-option">
+        <ChoiceElement
           className="rsc-os-option-element"
           style={bubbleOptionStyle}
           user={user}
           onClick={() => this.onOptionClick(option)}
         >
           {label}
-        </OptionElement>
-      </Option>
+        </ChoiceElement>
+      </Choice>
     );
   };
 
@@ -36,13 +36,13 @@ class MultipleChoiceStep extends Component {
     const { options } = step;
 
     return (
-      <OptionsStepContainer className="rsc-os">
-        <Options className="rsc-os-options">
+      <MultipleChoiceStepContainer className="rsc-os">
+        <MultipleChoice className="rsc-os-options">
           {Object.keys(options)
             .map(key => options[key])
             .map(this.renderOption)}
-        </Options>
-      </OptionsStepContainer>
+        </MultipleChoice>
+      </MultipleChoiceStepContainer>
     );
   }
 }
