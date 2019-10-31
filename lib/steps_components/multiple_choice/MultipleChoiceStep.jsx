@@ -48,6 +48,7 @@ class MultipleChoiceStep extends Component {
 
   render() {
     const { choices } = this.state;
+    const { bubbleChoiceStyle } = this.props;
 
     return (
       <MultipleChoiceStepContainer className="rsc-mcs">
@@ -56,7 +57,11 @@ class MultipleChoiceStep extends Component {
             .map(key => choices[key])
             .map(this.renderChoice)}
           <Choice className="rsc-mcs-submit">
-            <ChoiceElement className="rsc-mcs-submit-element" onClick={this.onSubmitClick()}>
+            <ChoiceElement
+              className="rsc-mcs-submit-element"
+              style={bubbleChoiceStyle}
+              onClick={this.onSubmitClick()}
+            >
               ✓
             </ChoiceElement>
           </Choice>
