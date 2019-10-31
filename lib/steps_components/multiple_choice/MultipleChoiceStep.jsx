@@ -54,7 +54,9 @@ class MultipleChoiceStep extends Component {
           {Object.keys(choices)
             .map(key => choices[key])
             .map(this.renderChoice)}
-          <button onClick={this.onSubmitClick}>Confirm</button>
+          <button type="button" onClick={this.onSubmitClick}>
+            Confirm
+          </button>
         </MultipleChoice>
       </MultipleChoiceStepContainer>
     );
