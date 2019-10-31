@@ -948,4 +948,96 @@ describe('ChatBot', () => {
       expect(wrapper.text()).to.contain('Your name is FirstName LastName and you are 34 years old');
     });
   });
+
+  describe('Multiple choices chat', () => {
+    const wrapper = mount(
+      <ChatBot
+        botDelay={0}
+        userDelay={0}
+        customDelay={0}
+        steps={[
+          {
+            '@class': '.TextStep',
+            id: '1',
+            message: 'Which fruits would you like?!',
+            trigger: '{salary}'
+          },
+          {
+            '@class': '.ChoiceStep',
+            id: '{choices}',
+            choices: [
+              {
+                label: 'Apple',
+                value: 'apple'
+              },
+              {
+                label: 'Banana',
+                value: 'banana'
+              },
+              {
+                label: 'Orange',
+                value: 'orange'
+              }
+            ],
+            trigger: value => {
+              if (
+                value.includes('Apple') &&
+                value.includes('Orange') &&
+                !value.includes('Banana')
+              ) {
+                return 'AppleAndOrange';
+              }
+              return 'InvalidChoices';
+            }
+          },
+          {
+            '@class': '.TextStep',
+            id: 'InvalidChoices',
+            message: 'The valid choice would have been Apple and Orange',
+            end: true
+          },
+          {
+            '@class': '.TextStep',
+            id: 'AppleAndOrange',
+            message: 'Apple and Orange chosen',
+            end: true
+          }
+        ]}
+      />
+    );
+
+    const ChoiceElementSelector = 'button.rsc-mcs-choice-element';
+    const SubmitElementSelector = 'button.rsc-mcs-submit-element';
+
+    // delay checking to let React update and render
+    beforeEach(done => {
+      setTimeout(() => {
+        done();
+      }, 150);
+    });
+
+    it('should render', () => {
+      expect(wrapper.find(ChatBot).length).to.equal(1);
+    });
+
+    it('should ask with 3 choices', () => {
+      const choices = wrapper.find(ChoiceElementSelector);
+      expect(choices.length).to.equal(3);
+
+      // choose Apple and Orange
+      choices.get(0).simulate('click');
+      choices.get(1).simulate('click');
+    });
+
+    it('should have 1 submit button', () => {
+      const submitElement = wrapper.find(SubmitElementSelector);
+
+      // submit
+      submitElement.simulate('click');
+    });
+
+    it('should show proper text after choices selection', () => {
+      expect(wrapper.text()).to.contain('Apple and Orange chosen');
+    });
+  });
 });
