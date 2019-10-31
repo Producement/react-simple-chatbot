@@ -28,6 +28,7 @@ import {
   deepCopy
 } from './utils';
 import { speakFn } from './speechSynthesis';
+import MultipleChoiceStep from "./steps_components/multiple_choice/MultipleChoiceStep";
 
 class ChatBot extends Component {
   /* istanbul ignore next */
@@ -662,7 +663,7 @@ class ChatBot extends Component {
       hideUserAvatar,
       speechSynthesis
     } = this.props;
-    const { options, component, asMessage } = step;
+    const { options, component, asMessage, choices } = step;
     const steps = this.generateRenderedStepsById();
     const previousStep = index > 0 ? renderedSteps[index - 1] : {};
     const previousSteps = index > 0 ? this.generateStepsById(renderedSteps.slice(0, index)) : {};
@@ -696,6 +697,19 @@ class ChatBot extends Component {
           previousValue={previousStep.value}
           triggerNextStep={this.triggerNextStep}
           bubbleOptionStyle={bubbleOptionStyle}
+        />
+      );
+    }
+
+    if (choices) {
+      return (
+        <MultipleChoiceStep
+          key={index}
+          speak={this.speak}
+          step={step}
+          previousValue={previousStep.value}
+          bubbleChoiceStyle={bubbleOptionStyle}
+          triggerNextStep={this.triggerNextStep}
         />
       );
     }
