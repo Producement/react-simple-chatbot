@@ -28,7 +28,7 @@ import {
   deepCopy
 } from './utils';
 import { speakFn } from './speechSynthesis';
-import MultipleChoiceStep from "./steps_components/multiple_choice/MultipleChoiceStep";
+import MultipleChoiceStep from './steps_components/multiple_choice/MultipleChoiceStep';
 
 class ChatBot extends Component {
   /* istanbul ignore next */
@@ -298,38 +298,30 @@ class ChatBot extends Component {
     let { currentStep, previousStep } = this.state;
     const isEnd = currentStep.end;
 
-    if (data && data.value) {
-      if (isNestedVariable(currentStep.id)) {
-        const [parentObjectName, remaining] = splitByFirstPeriod(currentStep.id);
-        const parentStep = this.findLastStepWithId(renderedSteps, parentObjectName);
-        if (!parentStep) {
-          // eslint-disable-next-line no-console
-          console.error('Error: Could not find parent step of the nested variable');
-        } else {
-          const newStep = {
-            '@class': '.ValueStep',
-            id: parentStep.id,
-            value: deepCopy(parentStep.value)
-          };
-          insertIntoObjectByPath(newStep.value, remaining, data.value);
+    const getValueFromData = () => {
+      if (data && data.value) {
+        return data.value;
+      }
+      if (data && Array.isArray(data)) {
+        return data.map(each => each.value);
+      }
+      return null;
+    };
 
-          // put newStep in second last position as some code later is going to replace last current element with updated current element
-          const lastStepOfPreviousSteps = previousSteps.pop();
-          const lastStepOfRenderedSteps = renderedSteps.pop();
-          previousSteps.push(newStep);
-          renderedSteps.push(newStep);
-          if (lastStepOfPreviousSteps) previousSteps.push(lastStepOfPreviousSteps);
-          if (lastStepOfRenderedSteps) renderedSteps.push(lastStepOfRenderedSteps);
-        }
+    const value = getValueFromData();
+
+    if (value) {
+      if (isNestedVariable(currentStep.id)) {
+        this.saveValueAsStep(value, currentStep.id, renderedSteps, previousSteps);
       } else {
-        currentStep.value = data.value;
+        currentStep.value = value;
       }
     }
     if (data && data.hideInput) {
       currentStep.hideInput = data.hideInput;
     }
     if (data && data.trigger) {
-      currentStep.trigger = this.getTriggeredStep(data.trigger, data.value);
+      currentStep.trigger = this.getTriggeredStep(data.trigger, value);
     }
 
     if (isEnd) {
@@ -378,33 +370,7 @@ class ChatBot extends Component {
         renderedSteps.pop();
       }
 
-      const trigger = this.getTriggeredStep(currentStep.trigger, currentStep.value);
-      let nextStep = Object.assign({}, steps[trigger]);
-
-      if (nextStep.message) {
-        nextStep.message = this.getStepMessage(nextStep.message);
-      } else if (nextStep.update) {
-        const updateStep = nextStep;
-        nextStep = Object.assign({}, steps[updateStep.update]);
-        if (nextStep.options || updateStep.updateOptions) {
-          if (updateStep.updateOptions) {
-            nextStep.options = updateStep.updateOptions;
-          } else {
-            for (let i = 0, len = nextStep.options.length; i < len; i += 1) {
-              nextStep.options[i].trigger = updateStep.trigger;
-            }
-          }
-          nextStep.user = false;
-        } else {
-          nextStep.trigger = updateStep.trigger;
-        }
-      }
-
-      if (typeof nextStep.evalExpression === 'string') {
-        this.evaluateExpression(nextStep.evalExpression);
-      }
-
-      nextStep.key = Random(24);
+      const nextStep = this.getNextStep(currentStep, steps);
 
       previousStep = currentStep;
       currentStep = nextStep;
@@ -449,6 +415,61 @@ class ChatBot extends Component {
           renderedSteps
         });
       }, 300);
+    }
+  };
+
+  getNextStep = (currentStep, steps) => {
+    const trigger = this.getTriggeredStep(currentStep.trigger, currentStep.value);
+    let nextStep = Object.assign({}, steps[trigger]);
+
+    if (nextStep.message) {
+      nextStep.message = this.getStepMessage(nextStep.message);
+    } else if (nextStep.update) {
+      const updateStep = nextStep;
+      nextStep = Object.assign({}, steps[updateStep.update]);
+      if (nextStep.options || updateStep.updateOptions) {
+        if (updateStep.updateOptions) {
+          nextStep.options = updateStep.updateOptions;
+        } else {
+          for (let i = 0, len = nextStep.options.length; i < len; i += 1) {
+            nextStep.options[i].trigger = updateStep.trigger;
+          }
+        }
+        nextStep.user = false;
+      } else {
+        nextStep.trigger = updateStep.trigger;
+      }
+    }
+
+    if (typeof nextStep.evalExpression === 'string') {
+      this.evaluateExpression(nextStep.evalExpression);
+    }
+
+    nextStep.key = Random(24);
+    return nextStep;
+  };
+
+  saveValueAsStep = (value, id, renderedSteps, previousSteps) => {
+    const [parentObjectName, remaining] = splitByFirstPeriod(id);
+    const parentStep = this.findLastStepWithId(renderedSteps, parentObjectName);
+    if (!parentStep) {
+      // eslint-disable-next-line no-console
+      console.error('Error: Could not find parent step of the nested variable');
+    } else {
+      const newStep = {
+        '@class': '.ValueStep',
+        id: parentStep.id,
+        value: deepCopy(parentStep.value)
+      };
+      insertIntoObjectByPath(newStep.value, remaining, value);
+
+      // put newStep in second last position as some code later is going to replace last current element with updated current element
+      const lastStepOfPreviousSteps = previousSteps.pop();
+      const lastStepOfRenderedSteps = renderedSteps.pop();
+      previousSteps.push(newStep);
+      renderedSteps.push(newStep);
+      if (lastStepOfPreviousSteps) previousSteps.push(lastStepOfPreviousSteps);
+      if (lastStepOfRenderedSteps) renderedSteps.push(lastStepOfRenderedSteps);
     }
   };
 
