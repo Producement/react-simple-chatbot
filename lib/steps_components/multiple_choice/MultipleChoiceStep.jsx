@@ -23,7 +23,15 @@ class MultipleChoiceStep extends Component {
     const { triggerNextStep } = this.props;
     const { choices } = this.state;
 
-    triggerNextStep(choices.filter(choice => choice.selected));
+    triggerNextStep(
+      choices
+        .filter(choice => choice.selected)
+        .map(choice => {
+          const copy = Object.assign({}, choice);
+          delete copy.selected;
+          return copy;
+        })
+    );
   };
 
   renderChoice = choice => {
