@@ -1,5 +1,5 @@
 import React from 'react';
-import { beforeEach, describe, it } from 'mocha';
+import { describe, it } from 'mocha';
 import { expect } from 'chai';
 import { mount } from 'enzyme';
 
@@ -23,16 +23,8 @@ describe('MultipleChoiceStep', () => {
     bubbleStyle: {},
     triggerNextStep: choices => {
       chosenChoices = choices;
-      console.log('****', 'chosenChoices has been set');
     }
   };
-
-  // allow triggerNextStep to return value
-  beforeEach(done => {
-    setTimeout(() => {
-      done();
-    }, 100);
-  });
 
   // eslint-disable-next-line react/jsx-filename-extension
   const wrapper = mount(<MultipleChoiceStep {...props} />);
@@ -96,16 +88,17 @@ describe('MultipleChoiceStep', () => {
     expect(updatedChoiceElements.at(1).text()).to.not.contain('✓');
   });
 
-  it('should return chosen choices', () => {
+  it('should return chosen choices after confirmation', () => {
+    wrapper.find(SubmitElementSelector).simulate('click');
+    wrapper.update();
+
     const chooseIndices = [0, 2];
 
-    // // wait until triggerNextStep() populates chosenChoices
-    // while (!chosenChoices.length);
-    console.log('****', chosenChoices);
+    // wait until triggerNextStep() populates chosenChoices
+    while (!chosenChoices.length);
 
     const { choices } = props.step;
     const chooseChoices = choices.filter((_, index) => chooseIndices.includes(index));
-    console.log('****', chooseChoices);
 
     for (const choice of chooseChoices) {
       expect(chosenChoices).to.deep.include(choice);
