@@ -68,7 +68,7 @@ class MultipleChoiceStep extends Component {
             <ChoiceElement
               className="rsc-mcs-submit-element"
               style={bubbleChoiceStyle}
-              onClick={this.onSubmitClick()}
+              onClick={this.onSubmitClick}
             >
               ✓
             </ChoiceElement>

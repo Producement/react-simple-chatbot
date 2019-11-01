@@ -8,6 +8,7 @@ import { ChatBotContainer, FloatButton, Header, HeaderIcon } from '../../lib/com
 import { CloseIcon } from '../../lib/icons';
 import { TextStep } from '../../lib/steps_components';
 
+// eslint-disable-next-line react/jsx-filename-extension
 const CustomComponent = () => <div />;
 
 const removeNewLineChars = str =>
@@ -960,7 +961,7 @@ describe('ChatBot', () => {
             '@class': '.TextStep',
             id: '1',
             message: 'Which fruits would you like?!',
-            trigger: '{salary}'
+            trigger: '{choices}'
           },
           {
             '@class': '.ChoiceStep',
@@ -979,11 +980,11 @@ describe('ChatBot', () => {
                 value: 'orange'
               }
             ],
-            trigger: value => {
+            trigger: ({ value }) => {
               if (
-                value.includes('Apple') &&
-                value.includes('Orange') &&
-                !value.includes('Banana')
+                value.includes('apple') &&
+                value.includes('orange') &&
+                !value.includes('banana')
               ) {
                 return 'AppleAndOrange';
               }
@@ -1007,13 +1008,14 @@ describe('ChatBot', () => {
     );
 
     const ChoiceElementSelector = 'button.rsc-mcs-choice-element';
+
     const SubmitElementSelector = 'button.rsc-mcs-submit-element';
 
     // delay checking to let React update and render
     beforeEach(done => {
       setTimeout(() => {
         done();
-      }, 150);
+      }, 100);
     });
 
     it('should render', () => {
@@ -1021,15 +1023,17 @@ describe('ChatBot', () => {
     });
 
     it('should ask with 3 choices', () => {
+      wrapper.update();
       const choices = wrapper.find(ChoiceElementSelector);
       expect(choices.length).to.equal(3);
 
       // choose Apple and Orange
-      choices.get(0).simulate('click');
-      choices.get(1).simulate('click');
+      choices.at(0).simulate('click');
+      choices.at(2).simulate('click');
     });
 
     it('should have 1 submit button', () => {
+      wrapper.update();
       const submitElement = wrapper.find(SubmitElementSelector);
 
       // submit
@@ -1037,6 +1041,7 @@ describe('ChatBot', () => {
     });
 
     it('should show proper text after choices selection', () => {
+      wrapper.update();
       expect(wrapper.text()).to.contain('Apple and Orange chosen');
     });
   });
