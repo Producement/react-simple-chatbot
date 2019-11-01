@@ -14,7 +14,10 @@ class MultipleChoiceStep extends Component {
   onChoiceClick = choice => {
     const { choices } = this.state;
 
-    choices.find(each => JSON.stringify(each) === JSON.stringify(choice)).selected = true;
+    const sameChoiceFromState = choices.find(
+      each => JSON.stringify(each) === JSON.stringify(choice)
+    );
+    sameChoiceFromState.selected = !sameChoiceFromState.selected;
 
     this.setState({ choices });
   };
