@@ -75,8 +75,11 @@ describe('MultipleChoiceStep', () => {
     wrapper.update();
     const updatedChoiceElements = wrapper.find(ChoiceElementSelector);
     expect(updatedChoiceElements.at(0).text()).to.contain('✓');
+    expect(updatedChoiceElements.at(0).hasClass('rsc-mcs-choice-element--selected')).to.equal(true);
     expect(updatedChoiceElements.at(1).text()).to.contain('✓');
+    expect(updatedChoiceElements.at(1).hasClass('rsc-mcs-choice-element--selected')).to.equal(true);
     expect(updatedChoiceElements.at(2).text()).to.contain('✓');
+    expect(updatedChoiceElements.at(2).hasClass('rsc-mcs-choice-element--selected')).to.equal(true);
   });
 
   it('should allow deselecting of choices', () => {
@@ -86,6 +89,9 @@ describe('MultipleChoiceStep', () => {
     wrapper.update();
     const updatedChoiceElements = wrapper.find(ChoiceElementSelector);
     expect(updatedChoiceElements.at(1).text()).to.not.contain('✓');
+    expect(updatedChoiceElements.at(1).hasClass('rsc-mcs-choice-element--selected')).to.equal(
+      false
+    );
   });
 
   it('should return chosen choices after confirmation', () => {

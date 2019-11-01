@@ -45,7 +45,9 @@ class MultipleChoiceStep extends Component {
     return (
       <Choice key={JSON.stringify(choice)} className="rsc-mcs-choice">
         <ChoiceElement
-          className="rsc-mcs-choice-element"
+          className={`rsc-mcs-choice-element ${
+            choice.selected ? 'rsc-mcs-choice-element--selected' : ''
+          }`}
           style={bubbleChoiceStyle}
           user={user}
           onClick={() => this.onChoiceClick(choice)}
