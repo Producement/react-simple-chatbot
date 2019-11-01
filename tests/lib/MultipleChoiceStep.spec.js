@@ -1,5 +1,5 @@
 import React from 'react';
-import { describe, it } from 'mocha';
+import { beforeEach, describe, it } from 'mocha';
 import { expect } from 'chai';
 import { mount } from 'enzyme';
 
@@ -23,8 +23,16 @@ describe('MultipleChoiceStep', () => {
     bubbleStyle: {},
     triggerNextStep: choices => {
       chosenChoices = choices;
+      console.log('****', 'chosenChoices has been set');
     }
   };
+
+  // allow triggerNextStep to return value
+  beforeEach(done => {
+    setTimeout(() => {
+      done();
+    }, 100);
+  });
 
   // eslint-disable-next-line react/jsx-filename-extension
   const wrapper = mount(<MultipleChoiceStep {...props} />);
@@ -46,7 +54,7 @@ describe('MultipleChoiceStep', () => {
     expect(label).to.be.equal('Choice 1');
   });
 
-  it("should render the second option with label equal 'Choice 2'", () => {
+  it("should render the second choice with label equal 'Choice 2'", () => {
     const label = wrapper
       .find(ChoiceElementSelector)
       .at(1)
@@ -54,7 +62,7 @@ describe('MultipleChoiceStep', () => {
     expect(label).to.be.equal('Choice 2');
   });
 
-  it("should render the second option with label equal 'Choice 3'", () => {
+  it("should render the third choice with label equal 'Choice 3'", () => {
     const label = wrapper
       .find(ChoiceElementSelector)
       .at(2)
@@ -66,21 +74,41 @@ describe('MultipleChoiceStep', () => {
     expect(wrapper.find(SubmitElementSelector).length).to.equal(1);
   });
 
+  it('should allow selecting of choices', () => {
+    const choiceElements = wrapper.find(ChoiceElementSelector);
+    choiceElements.at(0).simulate('click');
+    choiceElements.at(1).simulate('click');
+    choiceElements.at(2).simulate('click');
+
+    wrapper.update();
+    const updatedChoiceElements = wrapper.find(ChoiceElementSelector);
+    expect(updatedChoiceElements.at(0).text()).to.contain('✓');
+    expect(updatedChoiceElements.at(1).text()).to.contain('✓');
+    expect(updatedChoiceElements.at(2).text()).to.contain('✓');
+  });
+
+  it('should allow deselecting of choices', () => {
+    const choiceElements = wrapper.find(ChoiceElementSelector);
+    choiceElements.at(1).simulate('click');
+
+    wrapper.update();
+    const updatedChoiceElements = wrapper.find(ChoiceElementSelector);
+    expect(updatedChoiceElements.at(1).text()).to.not.contain('✓');
+  });
+
   it('should return chosen choices', () => {
     const chooseIndices = [0, 2];
-    const choiceElements = wrapper.find(ChoiceElementSelector);
-    for (const index of chooseIndices) {
-      choiceElements.at(index).simulate('click');
-    }
 
-    // wait until triggerNextStep() populates chosenChoices
-    while (!chosenChoices);
+    // // wait until triggerNextStep() populates chosenChoices
+    // while (!chosenChoices.length);
+    console.log('****', chosenChoices);
 
     const { choices } = props.step;
     const chooseChoices = choices.filter((_, index) => chooseIndices.includes(index));
+    console.log('****', chooseChoices);
 
-    for (const chosenChoice of chosenChoices) {
-      expect(chooseChoices).to.deep.include(chosenChoice);
+    for (const choice of chooseChoices) {
+      expect(chosenChoices).to.deep.include(choice);
     }
   });
 });
