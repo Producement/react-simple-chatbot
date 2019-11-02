@@ -17,8 +17,12 @@ describe('MultipleChoiceStep', () => {
       choices: [
         { value: 'choice1', label: 'Choice 1' },
         { value: 'choice2', label: 'Choice 2' },
-        { value: 'choice3', label: 'Choice 3' }
-      ]
+        { value: 'choice3', label: 'Choice 3' },
+        { value: 'choice4', label: 'Choice 4' },
+        { value: 'choice5', label: 'Choice 5' }
+      ],
+      maxChoices: 3,
+      minChoices: 1
     },
     bubbleStyle: {},
     triggerNextStep: choices => {
@@ -34,11 +38,11 @@ describe('MultipleChoiceStep', () => {
     expect(wrapper.find(MultipleChoiceStep).length).to.be.equal(1);
   });
 
-  it('should render 3 options', () => {
-    expect(wrapper.find(ChoiceElementSelector).length).to.be.equal(3);
+  it('should render 5 choices', () => {
+    expect(wrapper.find(ChoiceElementSelector).length).to.be.equal(5);
   });
 
-  it("should render the first option with label equal 'Choice 1'", () => {
+  it("should render the first choice with label equal 'Choice 1'", () => {
     const label = wrapper
       .find(ChoiceElementSelector)
       .at(0)
@@ -62,15 +66,40 @@ describe('MultipleChoiceStep', () => {
     expect(label).to.be.equal('Choice 3');
   });
 
+  it("should render the fourth choice with label equal 'Choice 4'", () => {
+    const label = wrapper
+      .find(ChoiceElementSelector)
+      .at(3)
+      .text();
+    expect(label).to.be.equal('Choice 4');
+  });
+
+  it("should render the fifth choice with label equal 'Choice 5'", () => {
+    const label = wrapper
+      .find(ChoiceElementSelector)
+      .at(4)
+      .text();
+    expect(label).to.be.equal('Choice 5');
+  });
+
   it('should render the confirm button', () => {
     expect(wrapper.find(SubmitElementSelector).length).to.equal(1);
   });
 
-  it('should allow selecting of choices', () => {
+  it('should not allow submission with 0 choices selected', () => {
+    const submitElement = wrapper.find(SubmitElementSelector);
+    submitElement.simulate('click');
+
+    expect(chosenChoices.length).to.equal(0);
+  });
+
+  it('should allow selecting of only 3 choices', () => {
     const choiceElements = wrapper.find(ChoiceElementSelector);
     choiceElements.at(0).simulate('click');
     choiceElements.at(1).simulate('click');
     choiceElements.at(2).simulate('click');
+    choiceElements.at(3).simulate('click');
+    choiceElements.at(4).simulate('click');
 
     wrapper.update();
     const updatedChoiceElements = wrapper.find(ChoiceElementSelector);
@@ -80,6 +109,14 @@ describe('MultipleChoiceStep', () => {
     expect(updatedChoiceElements.at(1).hasClass('rsc-mcs-choice-element--selected')).to.equal(true);
     expect(updatedChoiceElements.at(2).text()).to.contain('✓');
     expect(updatedChoiceElements.at(2).hasClass('rsc-mcs-choice-element--selected')).to.equal(true);
+    expect(updatedChoiceElements.at(3).text()).to.not.contain('✓');
+    expect(updatedChoiceElements.at(3).hasClass('rsc-mcs-choice-element--selected')).to.equal(
+      false
+    );
+    expect(updatedChoiceElements.at(4).text()).to.not.contain('✓');
+    expect(updatedChoiceElements.at(4).hasClass('rsc-mcs-choice-element--selected')).to.equal(
+      false
+    );
   });
 
   it('should allow deselecting of choices', () => {
