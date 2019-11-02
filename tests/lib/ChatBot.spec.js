@@ -1044,5 +1044,11 @@ describe('ChatBot', () => {
       wrapper.update();
       expect(wrapper.text()).to.contain('Apple and Orange chosen');
     });
+
+    it('should have no submission button for Multiple Choice component', () => {
+      wrapper.update();
+
+      expect(wrapper.find(SubmitElementSelector).length).to.equal(0);
+    });
   });
 });
