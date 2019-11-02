@@ -148,4 +148,18 @@ describe('MultipleChoiceStep', () => {
       expect(chosenChoices).to.deep.include(choice);
     }
   });
+
+  it('should be disabled after submission', () => {
+    const choiceElements = wrapper.find(ChoiceElementSelector);
+
+    choiceElements.at(0).simulate('click');
+
+    wrapper.update();
+    const updatedChoiceElements = wrapper.find(ChoiceElementSelector);
+    expect(updatedChoiceElements.at(0).text()).to.contain('✓');
+  });
+
+  it('should not have submit button after submission', () => {
+    expect(wrapper.find(SubmitElementSelector).length).to.equal(0);
+  });
 });
