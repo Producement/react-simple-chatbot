@@ -11,30 +11,42 @@ class MultipleChoiceStep extends Component {
     choices: this.props.step.choices.map(choice => Object.assign({}, choice, { selected: false }))
   };
 
+  getNumberOfSelectedChoices = choices => {
+    return choices.filter(each => each.selected).length;
+  };
+
   onChoiceClick = choice => {
     const { choices } = this.state;
+    const { step } = this.props;
+    const { maxChoices } = step;
 
     const sameChoiceFromState = choices.find(
       each => JSON.stringify(each) === JSON.stringify(choice)
     );
+    if (!sameChoiceFromState.selected && this.getNumberOfSelectedChoices(choices) >= maxChoices) {
+      return;
+    }
     sameChoiceFromState.selected = !sameChoiceFromState.selected;
 
     this.setState({ choices });
   };
 
   onSubmitClick = () => {
-    const { triggerNextStep } = this.props;
+    const { triggerNextStep, step } = this.props;
+    const { minChoices } = step;
     const { choices } = this.state;
 
-    triggerNextStep(
-      choices
-        .filter(choice => choice.selected)
-        .map(choice => {
-          const copy = Object.assign({}, choice);
-          delete copy.selected;
-          return copy;
-        })
-    );
+    if (this.getNumberOfSelectedChoices(choices) >= minChoices) {
+      triggerNextStep(
+        choices
+          .filter(choice => choice.selected)
+          .map(choice => {
+            const copy = Object.assign({}, choice);
+            delete copy.selected;
+            return copy;
+          })
+      );
+    }
   };
 
   renderChoice = choice => {
