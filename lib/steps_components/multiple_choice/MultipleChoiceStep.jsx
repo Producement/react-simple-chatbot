@@ -8,7 +8,8 @@ import MultipleChoiceStepContainer from './MultipleChoiceStepContainer';
 class MultipleChoiceStep extends Component {
   state = {
     // eslint-disable-next-line react/destructuring-assignment
-    choices: this.props.step.choices.map(choice => Object.assign({}, choice, { selected: false }))
+    choices: this.props.step.choices.map(choice => Object.assign({}, choice, { selected: false })),
+    disabled: false
   };
 
   getNumberOfSelectedChoices = choices => {
@@ -37,6 +38,7 @@ class MultipleChoiceStep extends Component {
     const { choices } = this.state;
 
     if (this.getNumberOfSelectedChoices(choices) >= minChoices) {
+      this.setState({ disabled: true });
       triggerNextStep(
         choices
           .filter(choice => choice.selected)
@@ -51,8 +53,11 @@ class MultipleChoiceStep extends Component {
 
   renderChoice = choice => {
     const { bubbleChoiceStyle, step } = this.props;
+    const { disabled } = this.state;
     const { user } = step;
     const { label } = choice;
+
+    const doNothing = () => {};
 
     return (
       <Choice key={JSON.stringify(choice)} className="rsc-mcs-choice">
@@ -62,7 +67,7 @@ class MultipleChoiceStep extends Component {
           }`}
           style={bubbleChoiceStyle}
           user={user}
-          onClick={() => this.onChoiceClick(choice)}
+          onClick={disabled ? doNothing : () => this.onChoiceClick(choice)}
         >
           {choice.selected ? '✓' : ''}
           {label}
@@ -72,7 +77,7 @@ class MultipleChoiceStep extends Component {
   };
 
   render() {
-    const { choices } = this.state;
+    const { choices, disabled } = this.state;
     const { bubbleChoiceStyle } = this.props;
 
     return (
@@ -82,13 +87,15 @@ class MultipleChoiceStep extends Component {
             .map(key => choices[key])
             .map(this.renderChoice)}
           <Choice className="rsc-mcs-submit">
-            <ChoiceElement
-              className="rsc-mcs-submit-element"
-              style={bubbleChoiceStyle}
-              onClick={this.onSubmitClick}
-            >
-              ✓
-            </ChoiceElement>
+            {disabled ? null : (
+              <ChoiceElement
+                className="rsc-mcs-submit-element"
+                style={bubbleChoiceStyle}
+                onClick={this.onSubmitClick}
+              >
+                ✓
+              </ChoiceElement>
+            )}
           </Choice>
         </MultipleChoice>
       </MultipleChoiceStepContainer>
