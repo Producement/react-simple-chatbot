@@ -1040,15 +1040,14 @@ describe('ChatBot', () => {
       submitElement.simulate('click');
     });
 
+    it('should replace MultipleChoiceStep with TextStep', () => {
+      wrapper.update();
+      expect(wrapper.text()).to.contain('Apple Orange');
+    });
+
     it('should show proper text after choices selection', () => {
       wrapper.update();
       expect(wrapper.text()).to.contain('Apple and Orange chosen');
-    });
-
-    it('should have no submission button for Multiple Choice component', () => {
-      wrapper.update();
-
-      expect(wrapper.find(SubmitElementSelector).length).to.equal(0);
     });
   });
 });

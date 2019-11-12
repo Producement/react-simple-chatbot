@@ -365,6 +365,40 @@ class ChatBot extends Component {
         renderedSteps,
         previousSteps
       });
+    } else if (currentStep.choices && data) {
+      const message = data.map(each => each.label).join(' ');
+      delete currentStep.choices;
+
+      // Find the last state and append it to the new one
+      const lastSameSteps = renderedSteps.filter(step => step.id === currentStep.id);
+      const lastSameStep = lastSameSteps.length > 1 && lastSameSteps[lastSameSteps.length - 2];
+      let updatedValue = value;
+      if (Array.isArray(lastSameStep.value) && Array.isArray(value)) {
+        updatedValue = [...lastSameStep.value, ...updatedValue];
+      }
+
+      currentStep = Object.assign(
+        {},
+        currentStep,
+        defaultUserSettings,
+        {
+          user: true,
+          message,
+          value: updatedValue
+        },
+        this.metadata(currentStep)
+      );
+
+      renderedSteps.pop();
+      previousSteps.pop();
+      renderedSteps.push(currentStep);
+      previousSteps.push(currentStep);
+
+      this.setState({
+        currentStep,
+        renderedSteps,
+        previousSteps
+      });
     } else if (currentStep.trigger) {
       if (currentStep.replace) {
         renderedSteps.pop();
