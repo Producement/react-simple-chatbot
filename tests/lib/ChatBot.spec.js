@@ -995,12 +995,18 @@ describe('ChatBot', () => {
             '@class': '.TextStep',
             id: 'InvalidChoices',
             message: 'The valid choice would have been Apple and Orange',
-            end: true
+            trigger: 'EndMessage'
           },
           {
             '@class': '.TextStep',
             id: 'AppleAndOrange',
             message: 'Apple and Orange chosen',
+            trigger: 'EndMessage'
+          },
+          {
+            '@class': '.TextStep',
+            id: 'EndMessage',
+            message: 'First choice: {choices}',
             end: true
           }
         ]}
@@ -1048,6 +1054,11 @@ describe('ChatBot', () => {
     it('should show proper text after choices selection', () => {
       wrapper.update();
       expect(wrapper.text()).to.contain('Apple and Orange chosen');
+    });
+
+    it('should store data in step', () => {
+      wrapper.update();
+      expect(wrapper.text()).to.contain('First choice: [\n "apple",\n "orange"\n]');
     });
   });
 });
