@@ -8,12 +8,16 @@ import { ChatBotContainer, FloatButton, Header, HeaderIcon } from '../../lib/com
 import { CloseIcon } from '../../lib/icons';
 import { TextStep } from '../../lib/steps_components';
 
+// eslint-disable-next-line react/jsx-filename-extension
 const CustomComponent = () => <div />;
 
 const removeNewLineChars = str =>
   typeof str === 'string' ? str.replace(/(\r\n|\n|\r)/gm, '') : str;
 
 describe('ChatBot', () => {
+  const OptionElementSelector = 'button.rsc-os-option-element';
+  const InputElementSelector = 'input.rsc-input';
+
   describe('Simple', () => {
     const wrapper = mount(
       <ChatBot
@@ -73,11 +77,11 @@ describe('ChatBot', () => {
 
     before(done => {
       wrapper.setState({ inputValue: 'test' });
-      wrapper.find('input.rsc-input').simulate('keyPress', { key: 'Enter' });
+      wrapper.find(InputElementSelector).simulate('keyPress', { key: 'Enter' });
 
       setTimeout(() => {
         wrapper.setState({ inputValue: 'test' });
-        wrapper.find('input.rsc-input').simulate('keyPress', { key: 'Enter' });
+        wrapper.find(InputElementSelector).simulate('keyPress', { key: 'Enter' });
       }, 100);
 
       setTimeout(() => {
@@ -298,7 +302,7 @@ describe('ChatBot', () => {
     );
 
     it('should be rendered without input', () => {
-      expect(wrapper.find('input.rsc-input')).to.have.length(0);
+      expect(wrapper.find(InputElementSelector)).to.have.length(0);
     });
   });
 
@@ -365,7 +369,7 @@ describe('ChatBot', () => {
     );
 
     it("should be rendered with input to autocomplete on 'firstname'", () => {
-      expect(wrapper.find('input.rsc-input').props().autoComplete).to.be.equal('firstname');
+      expect(wrapper.find(InputElementSelector).props().autoComplete).to.be.equal('firstname');
     });
   });
 
@@ -453,7 +457,7 @@ describe('ChatBot', () => {
     });
 
     it('options should be correct', () => {
-      const options = wrapper.find('button.rsc-os-option-element');
+      const options = wrapper.find(OptionElementSelector);
       const expectedTexts = ['Fee: 15 & Days: 3', 'Fee: 30 & Days: 1'];
       for (const expectedText of expectedTexts) {
         expect(wrapper.text()).to.contain(expectedText);
@@ -464,12 +468,12 @@ describe('ChatBot', () => {
 
     it('should have two options, after selection', () => {
       wrapper.update();
-      const options = wrapper.find('button.rsc-os-option-element');
+      const options = wrapper.find(OptionElementSelector);
       expect(options.length).to.be.equal(2);
     });
 
     it('options should be correct, after selection', () => {
-      const options = wrapper.find('button.rsc-os-option-element');
+      const options = wrapper.find(OptionElementSelector);
       const expectedTexts = ['Fee: 16', 'Days: 2'];
       for (const expectedText of expectedTexts) {
         expect(wrapper.text()).to.contain(expectedText);
@@ -563,7 +567,7 @@ describe('ChatBot', () => {
 
     it('should present first with 2 options', () => {
       wrapper.update();
-      const options = wrapper.find('button.rsc-os-option-element');
+      const options = wrapper.find(OptionElementSelector);
       expect(options.length).to.be.equal(2);
 
       options.at(0).simulate('click');
@@ -579,7 +583,7 @@ describe('ChatBot', () => {
 
     it('should present next with 2 options', () => {
       wrapper.update();
-      const options = wrapper.find('button.rsc-os-option-element');
+      const options = wrapper.find(OptionElementSelector);
       expect(options.length).to.be.equal(2);
 
       options.at(0).simulate('click');
@@ -639,7 +643,7 @@ describe('ChatBot', () => {
     });
 
     it('should allow selecting selecting options', () => {
-      const options = wrapper.find('button.rsc-os-option-element');
+      const options = wrapper.find(OptionElementSelector);
       expect(options.length).to.equal(2);
 
       options.at(0).simulate('click');
@@ -724,7 +728,7 @@ describe('ChatBot', () => {
 
     it('should allow selecting options', () => {
       wrapper.update();
-      const options = wrapper.find('button.rsc-os-option-element');
+      const options = wrapper.find(OptionElementSelector);
       expect(options.length).to.equal(2);
 
       options.at(0).simulate('click');
@@ -733,7 +737,7 @@ describe('ChatBot', () => {
     it('should allow inserting values', () => {
       wrapper.update();
       wrapper.setState({ inputValue: 'value' });
-      wrapper.find('input.rsc-input').simulate('keyPress', { key: 'Enter' });
+      wrapper.find(InputElementSelector).simulate('keyPress', { key: 'Enter' });
     });
 
     it('should render nested inputted values in message correctly', () => {
@@ -745,7 +749,7 @@ describe('ChatBot', () => {
 
     it('should allow selecting options', () => {
       wrapper.update();
-      const options = wrapper.find('button.rsc-os-option-element');
+      const options = wrapper.find(OptionElementSelector);
       expect(options.length).to.equal(2);
 
       options.at(0).simulate('click');
@@ -805,7 +809,7 @@ describe('ChatBot', () => {
 
     it('should allow selecting options', () => {
       wrapper.update();
-      const options = wrapper.find('button.rsc-os-option-element');
+      const options = wrapper.find(OptionElementSelector);
       expect(options.length).to.equal(1);
 
       options.at(0).simulate('click');
@@ -853,7 +857,7 @@ describe('ChatBot', () => {
 
     it('should allow selecting options', () => {
       wrapper.update();
-      const options = wrapper.find('button.rsc-os-option-element');
+      const options = wrapper.find(OptionElementSelector);
       expect(options.length).to.equal(2);
 
       options.at(1).simulate('click'); // Female
@@ -930,7 +934,7 @@ describe('ChatBot', () => {
     it('should allow inserting values', () => {
       wrapper.update();
       wrapper.setState({ inputValue: '1000' });
-      wrapper.find('input.rsc-input').simulate('keyPress', { key: 'Enter' });
+      wrapper.find(InputElementSelector).simulate('keyPress', { key: 'Enter' });
     });
 
     it('should update the entered value', () => {
@@ -947,5 +951,205 @@ describe('ChatBot', () => {
       wrapper.update();
       expect(wrapper.text()).to.contain('Your name is FirstName LastName and you are 34 years old');
     });
+  });
+
+  describe('Reloading of chat (using cache)', () => {
+    describe('Reloading at OptionStep', () => {
+      const cacheName = 'reload-at-optionstep';
+
+      const steps = [
+        {
+          '@class': '.TextStep',
+          id: '1',
+          message: 'Choose an option',
+          trigger: '{choice}'
+        },
+        {
+          '@class': '.UserStep',
+          id: '{choice}',
+          options: [
+            {
+              label: 'Choice 1',
+              value: 'choice1',
+              trigger: 'display'
+            },
+            {
+              label: 'Choice 2',
+              value: 'choice2',
+              trigger: 'display'
+            }
+          ]
+        },
+        {
+          '@class': '.TextStep',
+          id: 'display',
+          message: 'You chose {choice}',
+          end: true
+        }
+      ];
+      const chatBot = (
+        <ChatBot
+          cache
+          cacheName={cacheName}
+          botDelay={0}
+          userDelay={0}
+          customDelay={0}
+          steps={steps}
+        />
+      );
+
+      let wrapper = mount(chatBot);
+
+      // delay checking to let React update and render
+      beforeEach(done => {
+        setTimeout(() => {
+          done();
+        }, 150);
+      });
+
+      it('should render', () => {
+        expect(wrapper.find(ChatBot).length).to.equal(1);
+      });
+
+      it('should show options properly after reloading', () => {
+        wrapper = mount(chatBot);
+        wrapper.update();
+
+        const options = wrapper.find(OptionElementSelector);
+        expect(options.length).to.equal(2);
+        expect(options.at(0).text()).to.equal('Choice 1');
+        expect(options.at(1).text()).to.equal('Choice 2');
+
+        options.at(0).simulate('click');
+      });
+
+      it('should work properly after reloaded option is selected', () => {
+        wrapper.update();
+        expect(wrapper.text()).to.contain('Choice 1');
+        expect(wrapper.text()).to.contain('You chose choice1');
+      });
+
+      it('should still be rendering', () => {
+        expect(wrapper.find(ChatBot).length).to.equal(1);
+      });
+    });
+
+    describe('Reloading at UserStep', () => {
+      const cacheName = 'reload-at-userstep';
+
+      const validator = value => {
+        const numericalValue = Number(value.substring(1));
+        if (value.substring(0, 1) !== '$' || Number.isNaN(numericalValue)) {
+          return 'Please enter salary amount in number with $ sign';
+        }
+        return true;
+      };
+
+      const parser = value => {
+        return Number(value.substring(1));
+      };
+
+      const chatBot = (
+        <ChatBot
+          cache
+          cacheName={cacheName}
+          botDelay={0}
+          userDelay={0}
+          customDelay={0}
+          steps={[
+            {
+              '@class': '.TextStep',
+              id: '1',
+              message: 'Enter your salary!',
+              trigger: '{salary}'
+            },
+            {
+              '@class': '.UserStep',
+              id: '{salary}',
+              user: true,
+              validator,
+              parser,
+              trigger: 'display'
+            },
+            {
+              '@class': '.TextStep',
+              id: 'display',
+              message: 'Your salary is {salary}',
+              end: true
+            }
+          ]}
+        />
+      );
+
+      let wrapper = mount(chatBot);
+
+      // delay checking to let React update and render
+      beforeEach(done => {
+        setTimeout(() => {
+          done();
+        }, 150);
+      });
+
+      it('should render', () => {
+        expect(wrapper.find(ChatBot).length).to.equal(1);
+      });
+
+      it('should reload properly', () => {
+        // const oldWrapper = wrapper;
+        wrapper = mount(chatBot);
+
+        wrapper.update();
+
+        // setTimeout(() => {
+        //   expect(wrapper.equals(oldWrapper)).to.equal(true);
+        //   done();
+        // }, 150);
+      });
+
+      it('should disallow entering numbers without $: validator should work sign after reload', () => {
+        wrapper.update();
+        wrapper.setState({ inputValue: '200' });
+        wrapper.find(InputElementSelector).simulate('keyPress', { key: 'Enter' });
+        wrapper.update();
+
+        expect(wrapper.state().inputValue).to.equal(
+          'Please enter salary amount in number with $ sign'
+        );
+      });
+
+      it('should disallow entering non-numbers: validator should work after reload', () => {
+        wrapper.update();
+        wrapper.setState({ inputValue: '$ Two hundred' });
+        wrapper.find(InputElementSelector).simulate('keyPress', { key: 'Enter' });
+        wrapper.update();
+
+        expect(wrapper.state().inputValue).to.equal(
+          'Please enter salary amount in number with $ sign'
+        );
+      });
+
+      it('should allow entering proper number with $ sign: validator should work after reload', () => {
+        wrapper.update();
+        wrapper.setState({ inputValue: '$ 100' });
+        wrapper.find(InputElementSelector).simulate('keyPress', { key: 'Enter' });
+        wrapper.update();
+
+        expect(wrapper.state().inputValue).to.equal('');
+      });
+
+      it('should show proper output: parser should work after reload', () => {
+        wrapper.update();
+
+        expect(wrapper.text()).to.contain('Your salary is 100');
+      });
+
+      it('should still be rendering', () => {
+        expect(wrapper.find(ChatBot).length).to.equal(1);
+      });
+    });
+
+    // describe('Reloading at UserStep', () => {
+    //   // TODO: Complete this spec
+    // });
   });
 });
