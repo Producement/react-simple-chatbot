@@ -385,7 +385,7 @@ class ChatBot extends Component {
         nextStep.message = this.getStepMessage(nextStep.message);
       } else if (nextStep.update) {
         const updateStep = nextStep;
-        nextStep = Object.assign({}, steps[updateStep.update]);
+        nextStep = Object.assign({}, steps[updateStep.update], { updatedBy: updateStep.id });
         if (nextStep.options || updateStep.updateOptions) {
           if (updateStep.updateOptions) {
             nextStep.options = updateStep.updateOptions;
