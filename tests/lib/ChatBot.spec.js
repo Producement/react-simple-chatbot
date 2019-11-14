@@ -7,6 +7,7 @@ import ChatBot from '../../lib/ChatBot';
 import { ChatBotContainer, FloatButton, Header, HeaderIcon } from '../../lib/components';
 import { CloseIcon } from '../../lib/icons';
 import { TextStep } from '../../lib/steps_components';
+import { setData } from '../../lib/storage';
 
 // eslint-disable-next-line react/jsx-filename-extension
 const CustomComponent = () => <div />;
@@ -1095,15 +1096,9 @@ describe('ChatBot', () => {
       });
 
       it('should reload properly', () => {
-        // const oldWrapper = wrapper;
-        wrapper = mount(chatBot);
+        wrapper = mount(chatBot); // reload
 
         wrapper.update();
-
-        // setTimeout(() => {
-        //   expect(wrapper.equals(oldWrapper)).to.equal(true);
-        //   done();
-        // }, 150);
       });
 
       it('should disallow entering numbers without $: validator should work sign after reload', () => {
@@ -1148,8 +1143,83 @@ describe('ChatBot', () => {
       });
     });
 
-    // describe('Reloading at UserStep', () => {
-    //   // TODO: Complete this spec
-    // });
+    describe('Reloading at TextStep', () => {
+      const cacheName = 'reload-at-textstep';
+
+      const steps = [
+        {
+          '@class': '.TextStep',
+          id: '1',
+          message: 'First message',
+          trigger: '2'
+        },
+        {
+          '@class': '.TextStep',
+          id: '2',
+          message: 'Second message',
+          end: true
+        }
+      ];
+
+      const chatBot = (
+        <ChatBot
+          cache
+          cacheName={cacheName}
+          botDelay={0}
+          userDelay={0}
+          customDelay={0}
+          steps={steps}
+        />
+      );
+
+      let wrapper;
+
+      before(() => {
+        const state = {
+          currentStep: {
+            '@class': '.TextStep',
+            id: '1',
+            key: 'GnVGFdK84RGxhy1m6uvQWxAr',
+            message: 'First message',
+            trigger: '2'
+          },
+          previousStep: {},
+          previousSteps: [
+            {
+              '@class': '.TextStep',
+              id: '1',
+              key: 'GnVGFdK84RGxhy1m6uvQWxAr',
+              message: 'First message',
+              trigger: '2'
+            }
+          ],
+          renderedSteps: [
+            {
+              '@class': '.TextStep',
+              id: '1',
+              key: 'GnVGFdK84RGxhy1m6uvQWxAr',
+              message: 'First message',
+              trigger: '2'
+            }
+          ]
+        };
+
+        setData(cacheName, state);
+        wrapper = mount(chatBot);
+      });
+
+      it('should render', () => {
+        expect(wrapper.find(ChatBot).length).to.equal(1);
+      });
+
+      it('should continue rendering on reload', done => {
+        wrapper.update();
+        setTimeout(() => {
+          expect(wrapper.text()).to.contain('First message');
+          expect(wrapper.text()).to.contain('Second message');
+          done();
+        }, 100);
+      });
+    });
   });
 });
