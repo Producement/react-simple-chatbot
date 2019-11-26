@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Random from 'random-id';
+import deepEqual from 'deep-equal';
 import { CustomStep, OptionsStep, TextStep } from './steps_components';
 import schema from './schemas/schema';
 import * as storage from './storage';
@@ -327,7 +328,7 @@ class ChatBot extends Component {
     if (isEnd) {
       this.handleEnd();
     } else if (currentStep.options && data) {
-      const option = Object.assign({}, currentStep.options.filter(o => o === data)[0]);
+      const option = Object.assign({}, currentStep.options.filter(o => deepEqual(o, data))[0]);
       const trigger = this.getTriggeredStep(option.trigger, currentStep.value);
       delete currentStep.options;
 
@@ -460,7 +461,7 @@ class ChatBot extends Component {
       nextStep.message = this.getStepMessage(nextStep.message);
     } else if (nextStep.update) {
       const updateStep = nextStep;
-      nextStep = Object.assign({}, steps[updateStep.update]);
+      nextStep = Object.assign({}, steps[updateStep.update], { updatedBy: updateStep.id });
       if (nextStep.options || updateStep.updateOptions) {
         if (updateStep.updateOptions) {
           nextStep.options = updateStep.updateOptions;
@@ -613,10 +614,12 @@ class ChatBot extends Component {
 
     const isInvalid = currentStep.validator && this.checkInvalidInput();
 
+    const parsedValue = currentStep.parser ? currentStep.parser(inputValue) : inputValue;
+
     if (!isInvalid) {
       const step = {
         message: inputValue,
-        value: inputValue
+        value: parsedValue
       };
 
       if (isNestedVariable(currentStep.id)) {
@@ -631,7 +634,7 @@ class ChatBot extends Component {
             id: parentStep.id,
             value: deepCopy(parentStep.value)
           };
-          insertIntoObjectByPath(newStep.value, remaining, inputValue);
+          insertIntoObjectByPath(newStep.value, remaining, parsedValue);
           previousSteps.push(newStep);
           renderedSteps.push(newStep);
         }
