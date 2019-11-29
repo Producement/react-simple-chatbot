@@ -1334,10 +1334,12 @@ describe('ChatBot', () => {
       });
     });
   });
-  
+
   describe('Extra control', () => {
     const CustomControl = () => (
-      <button className="my-button">custom</button>
+      <button type="button" className="my-button">
+        custom
+      </button>
     );
     const wrapper = mount(
       <ChatBot
@@ -1364,7 +1366,7 @@ describe('ChatBot', () => {
             end: true
           }
         ]}
-      />,
+      />
     );
 
     it('should be rendered with an extra control beside submit button', () => {
@@ -1372,15 +1374,11 @@ describe('ChatBot', () => {
     });
 
     it('the extra control should be hidden', () => {
-      console.log("Setting input value");
       wrapper.setState({ inputValue: 'test' });
-      console.log("Simulate key press");
       wrapper.find('input.rsc-input').simulate('keyPress', { key: 'Enter' });
       setTimeout(() => {
-        console.log("testing hidden");
-        expect(wrapper.find('div.rsc-controls button.my-button')).to.have.length(0);  
+        expect(wrapper.find('div.rsc-controls button.my-button')).to.have.length(0);
       }, 500);
     });
-
   });
 });
