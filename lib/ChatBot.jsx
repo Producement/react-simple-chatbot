@@ -82,7 +82,12 @@ class ChatBot extends Component {
     const chatSteps = {};
 
     const defaultBotSettings = { delay: botDelay, avatar: botAvatar };
-    const defaultUserSettings = { delay: userDelay, avatar: userAvatar, hideInput: false };
+    const defaultUserSettings = {
+      delay: userDelay,
+      avatar: userAvatar,
+      hideInput: false,
+      hideExtraControl: false
+    };
     const defaultCustomSettings = { delay: customDelay };
 
     for (let i = 0, len = steps.length; i < len; i += 1) {
@@ -320,6 +325,9 @@ class ChatBot extends Component {
     }
     if (data && data.hideInput) {
       currentStep.hideInput = data.hideInput;
+    }
+    if (data && data.hideExtraControl) {
+      currentStep.hideExtraControl = data.hideExtraControl;
     }
     if (data && data.trigger) {
       currentStep.trigger = this.getTriggeredStep(data.trigger, value);
@@ -751,7 +759,6 @@ class ChatBot extends Component {
         <OptionsStep
           key={index}
           step={step}
-          speak={this.speak}
           previousValue={previousStep.value}
           triggerNextStep={this.triggerNextStep}
           bubbleOptionStyle={bubbleOptionStyle}
@@ -807,6 +814,8 @@ class ChatBot extends Component {
     const {
       className,
       contentStyle,
+      extraControl,
+      controlStyle,
       floating,
       floatingIcon,
       floatingStyle,
@@ -835,6 +844,15 @@ class ChatBot extends Component {
         )}
       </Header>
     );
+
+    let customControl;
+    if (extraControl !== undefined) {
+      customControl = React.cloneElement(extraControl, {
+        disabled,
+        speaking,
+        invalid: inputInvalid
+      });
+    }
 
     const icon =
       (this.isInputValueEmpty() || speaking) && recognitionEnable ? <MicIcon /> : <SubmitIcon />;
@@ -895,18 +913,21 @@ class ChatBot extends Component {
                 {...inputAttributesOverride}
               />
             )}
-            {!currentStep.hideInput && !hideSubmitButton && (
-              <SubmitButton
-                className="rsc-submit-button"
-                style={submitButtonStyle}
-                onClick={this.handleSubmitButton}
-                invalid={inputInvalid}
-                disabled={disabled}
-                speaking={speaking}
-              >
-                {icon}
-              </SubmitButton>
-            )}
+            <div style={controlStyle} className="rsc-controls">
+              {!currentStep.hideInput && !currentStep.hideExtraControl && customControl}
+              {!currentStep.hideInput && !hideSubmitButton && (
+                <SubmitButton
+                  className="rsc-submit-button"
+                  style={submitButtonStyle}
+                  onClick={this.handleSubmitButton}
+                  invalid={inputInvalid}
+                  disabled={disabled}
+                  speaking={speaking}
+                >
+                  {icon}
+                </SubmitButton>
+              )}
+            </div>
           </Footer>
         </ChatBotContainer>
       </div>
@@ -926,8 +947,10 @@ ChatBot.propTypes = {
   contentStyle: PropTypes.objectOf(PropTypes.any),
   customDelay: PropTypes.number,
   customStyle: PropTypes.objectOf(PropTypes.any),
+  controlStyle: PropTypes.objectOf(PropTypes.any),
   enableMobileAutoFocus: PropTypes.bool,
   enableSmoothScroll: PropTypes.bool,
+  extraControl: PropTypes.objectOf(PropTypes.element),
   floating: PropTypes.bool,
   floatingIcon: PropTypes.oneOfType([PropTypes.string, PropTypes.element]),
   floatingStyle: PropTypes.objectOf(PropTypes.any),
@@ -975,9 +998,11 @@ ChatBot.defaultProps = {
   className: '',
   contentStyle: {},
   customStyle: {},
+  controlStyle: { position: 'absolute', right: '0', top: '0' },
   customDelay: 1000,
   enableMobileAutoFocus: false,
   enableSmoothScroll: false,
+  extraControl: undefined,
   floating: false,
   floatingIcon: <ChatIcon />,
   floatingStyle: {},
