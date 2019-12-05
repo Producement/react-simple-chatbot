@@ -1052,7 +1052,7 @@ describe('ChatBot', () => {
 
     it('should replace MultipleChoiceStep with TextStep', () => {
       wrapper.update();
-      expect(wrapper.text()).to.contain('Apple Orange');
+      expect(wrapper.text()).to.contain('Apple, Orange');
     });
 
     it('should show proper text after choices selection', () => {

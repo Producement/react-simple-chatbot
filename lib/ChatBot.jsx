@@ -373,7 +373,7 @@ class ChatBot extends Component {
         previousSteps
       });
     } else if (currentStep.choices && data) {
-      const message = data.map(each => each.label).join(' ');
+      const message = data.map(each => each.label).join(', ');
       delete currentStep.choices;
 
       // Find the last state and append it to the new one
