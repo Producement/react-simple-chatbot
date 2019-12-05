@@ -1388,8 +1388,8 @@ describe('ChatBot', () => {
         id: '1',
         options: [
           {
-            label: 'Label',
-            value: 'value'
+            label: 'Option Label',
+            value: ''
           }
         ],
         end: true
@@ -1411,10 +1411,10 @@ describe('ChatBot', () => {
       expect(wrapper.find(ChatBot).length).to.equal(1);
     });
 
-    it('should have two option', () => {
+    it('should have one option', () => {
       const options = wrapper.find(OptionElementSelector);
       expect(options.length).to.equal(1);
-      expect(options.at(0).text()).to.equal('Label');
+      expect(options.at(0).text()).to.equal('Option Label');
 
       options.at(0).simulate('click');
     });
@@ -1423,7 +1423,7 @@ describe('ChatBot', () => {
       expect(wrapper.find(OptionElementSelector).length).to.equal(0);
       const replacer = wrapper.find(TextStep);
       expect(replacer.length).to.equal(1);
-      expect(replacer.text()).to.equal('Label');
+      expect(replacer.text()).to.equal('Option Label');
     });
 
     it('should still be rendering', () => {
@@ -1472,6 +1472,61 @@ describe('ChatBot', () => {
     it('should render upto last message', () => {
       expect(wrapper.text()).to.contain('Last message');
       expect(wrapper.text()).to.not.contain('This should not be triggered');
+    });
+  });
+
+  describe('Option with no trigger', () => {
+    const steps = [
+      {
+        id: '1',
+        options: [
+          {
+            label: 'End',
+            value: ''
+          },
+          {
+            label: 'Do not end',
+            value: '',
+            trigger: 'next-step'
+          }
+        ]
+      },
+      {
+        id: 'next-step',
+        message: 'This is next step. This should not have triggered'
+      }
+    ];
+
+    const chatBot = <ChatBot botDelay={0} userDelay={0} customDelay={0} steps={steps} />;
+
+    const wrapper = mount(chatBot);
+
+    // delay checking to let React update and render
+    beforeEach(done => {
+      setTimeout(() => {
+        done();
+      }, 150);
+    });
+
+    it('Chat should render', () => {
+      expect(wrapper.find(ChatBot).length).to.equal(1);
+    });
+
+    it('Chat should have two option', () => {
+      const options = wrapper.find(OptionElementSelector);
+      expect(options.length).to.equal(2);
+      expect(options.at(0).text()).to.equal('End');
+
+      options.at(0).simulate('click');
+    });
+
+    it('should assign end property to last replaced step', () => {
+      const renderedSteps = wrapper.find(ChatBot).state('renderedSteps');
+      const lastStep = renderedSteps[renderedSteps.length - 1];
+
+      expect(lastStep.message).to.equal('End');
+      // eslint-disable-next-line no-unused-expressions
+      expect(lastStep.end).to.be.true;
     });
   });
 });

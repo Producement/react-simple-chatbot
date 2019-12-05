@@ -356,7 +356,8 @@ class ChatBot extends Component {
         {
           user: true,
           message: option.label,
-          trigger
+          trigger,
+          end: !trigger
         },
         this.metadata(currentStep)
       );
