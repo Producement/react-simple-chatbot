@@ -1430,4 +1430,48 @@ describe('ChatBot', () => {
       expect(wrapper.find(ChatBot).length).to.equal(1);
     });
   });
+
+  describe('UpdateSteps can assign end to steps', () => {
+    const steps = [
+      {
+        id: '1',
+        message: 'First message',
+        trigger: 'update-step'
+      },
+      {
+        id: 'update-step',
+        update: 'step',
+        end: true // this doesn't stop the chat
+      },
+      {
+        id: 'step',
+        message: 'Last message',
+        trigger: 'should-not-be-triggered'
+      },
+      {
+        id: 'should-not-be-triggered',
+        message: 'This should not be triggered'
+      }
+    ];
+
+    const chatBot = <ChatBot botDelay={0} userDelay={0} customDelay={0} steps={steps} />;
+
+    const wrapper = mount(chatBot);
+
+    // delay checking to let React update and render
+    beforeEach(done => {
+      setTimeout(() => {
+        done();
+      }, 150);
+    });
+
+    it('should render', () => {
+      expect(wrapper.find(ChatBot).length).to.equal(1);
+    });
+
+    it('should render upto last message', () => {
+      expect(wrapper.text()).to.contain('Last message');
+      expect(wrapper.text()).to.not.contain('This should not be triggered');
+    });
+  });
 });
