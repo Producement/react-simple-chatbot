@@ -1381,4 +1381,53 @@ describe('ChatBot', () => {
       }, 500);
     });
   });
+
+  describe('Last option step can be an end step', () => {
+    const steps = [
+      {
+        id: '1',
+        options: [
+          {
+            label: 'Label',
+            value: 'value'
+          }
+        ],
+        end: true
+      }
+    ];
+
+    const chatBot = <ChatBot botDelay={0} userDelay={0} customDelay={0} steps={steps} />;
+
+    const wrapper = mount(chatBot);
+
+    // delay checking to let React update and render
+    beforeEach(done => {
+      setTimeout(() => {
+        done();
+      }, 150);
+    });
+
+    it('should render', () => {
+      expect(wrapper.find(ChatBot).length).to.equal(1);
+    });
+
+    it('should have two option', () => {
+      const options = wrapper.find(OptionElementSelector);
+      expect(options.length).to.equal(1);
+      expect(options.at(0).text()).to.equal('Label');
+
+      options.at(0).simulate('click');
+    });
+
+    it('should replace OptionsStep with TextStep', () => {
+      expect(wrapper.find(OptionElementSelector).length).to.equal(0);
+      const replacer = wrapper.find(TextStep);
+      expect(replacer.length).to.equal(1);
+      expect(replacer.text()).to.equal('Label');
+    });
+
+    it('should still be rendering', () => {
+      expect(wrapper.find(ChatBot).length).to.equal(1);
+    });
+  });
 });
