@@ -728,12 +728,15 @@ class ChatBot extends Component {
       customStyle,
       hideBotAvatar,
       hideUserAvatar,
-      speechSynthesis
+      speechSynthesis,
+      readOnly
     } = this.props;
     const { options, component, asMessage, choices } = step;
     const steps = this.generateRenderedStepsById();
     const previousStep = index > 0 ? renderedSteps[index - 1] : {};
     const previousSteps = index > 0 ? this.generateStepsById(renderedSteps.slice(0, index)) : {};
+
+    const disabledStyle = { pointerEvents: 'none' };
 
     // '.ValueStep's should not be rendered
     if (step['@class'] === '.ValueStep') {
@@ -763,6 +766,7 @@ class ChatBot extends Component {
           previousValue={previousStep.value}
           triggerNextStep={this.triggerNextStep}
           bubbleOptionStyle={bubbleOptionStyle}
+          style={readOnly ? disabledStyle : null}
         />
       );
     }
@@ -776,6 +780,7 @@ class ChatBot extends Component {
           previousValue={previousStep.value}
           bubbleChoiceStyle={bubbleOptionStyle}
           triggerNextStep={this.triggerNextStep}
+          style={readOnly ? disabledStyle : null}
         />
       );
     }
@@ -832,7 +837,8 @@ class ChatBot extends Component {
       style,
       submitButtonStyle,
       width,
-      height
+      height,
+      readOnly
     } = this.props;
 
     const header = headerComponent || (
@@ -909,7 +915,7 @@ class ChatBot extends Component {
                 value={inputValue}
                 floating={floating}
                 invalid={inputInvalid}
-                disabled={disabled}
+                disabled={disabled || readOnly}
                 hasButton={!hideSubmitButton}
                 {...inputAttributesOverride}
               />
