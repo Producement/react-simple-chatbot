@@ -55,7 +55,7 @@ OptionsStep.propTypes = {
   bubbleOptionStyle: PropTypes.objectOf(PropTypes.any).isRequired,
   step: PropTypes.objectOf(PropTypes.any).isRequired,
   triggerNextStep: PropTypes.func.isRequired,
-  style: PropTypes.objectOf(PropTypes.object)
+  style: PropTypes.objectOf(PropTypes.string)
 };
 
 export default OptionsStep;

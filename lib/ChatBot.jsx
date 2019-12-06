@@ -737,6 +737,7 @@ class ChatBot extends Component {
     const previousSteps = index > 0 ? this.generateStepsById(renderedSteps.slice(0, index)) : {};
 
     const disabledStyle = { pointerEvents: 'none' };
+    const doNothing = () => {};
 
     // '.ValueStep's should not be rendered
     if (step['@class'] === '.ValueStep') {
@@ -764,7 +765,7 @@ class ChatBot extends Component {
           key={index}
           step={step}
           previousValue={previousStep.value}
-          triggerNextStep={this.triggerNextStep}
+          triggerNextStep={readOnly ? doNothing : this.triggerNextStep}
           bubbleOptionStyle={bubbleOptionStyle}
           style={readOnly ? disabledStyle : null}
         />
@@ -779,7 +780,7 @@ class ChatBot extends Component {
           step={step}
           previousValue={previousStep.value}
           bubbleChoiceStyle={bubbleOptionStyle}
-          triggerNextStep={this.triggerNextStep}
+          triggerNextStep={readOnly ? doNothing : this.triggerNextStep}
           style={readOnly ? disabledStyle : null}
         />
       );
@@ -871,7 +872,7 @@ class ChatBot extends Component {
     const inputAttributesOverride = currentStep.inputAttributes || inputAttributes;
 
     return (
-      <div className={`rsc ${className}`}>
+      <div className={`rsc ${className}`} style={readOnly ? { cursor: 'not-allowed' } : null}>
         {floating && (
           <FloatButton
             className="rsc-float-button"
