@@ -14,18 +14,14 @@ const otherFontTheme = {
   userFontColor: '#4a4a4a'
 };
 
-const steps = [
-  {
-    id: '1',
-    message: 'Hello World',
-    end: true
-  }
-];
-
 const ThemedExample = () => (
   <ThemeProvider theme={otherFontTheme}>
     <React.StrictMode>
-      <ChatBot steps={steps} />
+      <ChatBot
+        cache
+        cacheName="test"
+        url="/api/v1/chats/nextStep/1SLK9Bu1BAfttq--N1OM2t7ydp-X5Ja3A?stateId=93o2q"
+      />
     </React.StrictMode>
   </ThemeProvider>
 );
