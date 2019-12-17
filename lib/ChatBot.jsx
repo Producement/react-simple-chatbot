@@ -94,11 +94,7 @@ class ChatBot extends Component {
     const defaultCustomSettings = { delay: customDelay };
     if (url && steps.length === 0) {
       const response = await axios.get(url);
-      this.setState({
-        steps: [response.data]
-      });
-      console.log(response.data);
-      console.log(this.state.steps);
+      steps = [response.data];
     } else {
       for (let i = 0, len = steps.length; i < len; i += 1) {
         const step = steps[i];
@@ -117,8 +113,7 @@ class ChatBot extends Component {
       schema.checkInvalidIds(chatSteps);
     }
 
-    const firstStep = this.state.steps[0];
-    console.log(steps, firstStep);
+    const firstStep = steps[0];
     if (firstStep.message) {
       const { message } = firstStep;
       firstStep.message = typeof message === 'function' ? message() : message;
@@ -731,7 +726,6 @@ class ChatBot extends Component {
   };
 
   renderStep = (step, index) => {
-    console.log(step);
     const { renderedSteps } = this.state;
     const {
       avatarStyle,
