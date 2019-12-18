@@ -27,7 +27,8 @@ import {
   insertIntoObjectByPath,
   isVariable,
   makeVariable,
-  deepCopy
+  deepCopy,
+  getStepFromBackend
 } from './utils';
 import { speakFn } from './speechSynthesis';
 import MultipleChoiceStep from './steps_components/multiple_choice/MultipleChoiceStep';
@@ -69,7 +70,7 @@ class ChatBot extends Component {
   }
 
   async componentDidMount() {
-    const { url } = this.props;
+    const { api } = this.props;
     let { steps } = this.props;
     steps = steps || [];
     const {
@@ -92,9 +93,19 @@ class ChatBot extends Component {
       hideExtraControl: false
     };
     const defaultCustomSettings = { delay: customDelay };
-    if (url && steps.length === 0) {
-      const response = await axios.get(url);
-      steps = [response.data];
+    if (api && steps.length === 0) {
+      const response = await axios.post(api.url, api);
+      const step = response.data;
+      let settings = {};
+      if (step.user) {
+        settings = defaultUserSettings;
+      } else if (step.message || step.asMessage) {
+        settings = defaultBotSettings;
+      } else if (step.component) {
+        settings = defaultCustomSettings;
+      }
+      chatSteps[step.id] = Object.assign({}, settings, schema.parse(step));
+      steps = [step];
     } else {
       for (let i = 0, len = steps.length; i < len; i += 1) {
         const step = steps[i];
@@ -110,7 +121,7 @@ class ChatBot extends Component {
 
         chatSteps[step.id] = Object.assign({}, settings, schema.parse(step));
       }
-      schema.checkInvalidIds(chatSteps);
+      // schema.checkInvalidIds(chatSteps);
     }
 
     const firstStep = steps[0];
@@ -467,10 +478,11 @@ class ChatBot extends Component {
   };
 
   getNextStep = async (currentStep, steps) => {
-    const { url } = this.state;
+    const { api } = this.props;
     const trigger = this.getTriggeredStep(currentStep.trigger, currentStep.value);
-    let nextStep = url ? await axios.get(`&stepId=${trigger}`) : Object.assign({}, steps[trigger]);
-
+    let nextStep = steps[trigger]
+      ? Object.assign({}, steps[trigger])
+      : await getStepFromBackend(api, trigger);
     if (nextStep.message) {
       nextStep.message = this.getStepMessage(nextStep.message);
     } else if (nextStep.update) {
@@ -950,7 +962,7 @@ class ChatBot extends Component {
 }
 
 ChatBot.propTypes = {
-  url: PropTypes.string,
+  api: PropTypes.objectOf(PropTypes.any),
   avatarStyle: PropTypes.objectOf(PropTypes.any),
   botAvatar: PropTypes.string,
   botDelay: PropTypes.number,
@@ -1004,7 +1016,7 @@ ChatBot.propTypes = {
 };
 
 ChatBot.defaultProps = {
-  url: undefined,
+  api: undefined,
   steps: undefined,
   avatarStyle: {},
   botDelay: 1000,
