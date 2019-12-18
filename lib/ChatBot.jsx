@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import Random from 'random-id';
 import deepEqual from 'deep-equal';
-import axios from 'axios';
 import { CustomStep, OptionsStep, TextStep } from './steps_components';
 import schema from './schemas/schema';
 import * as storage from './storage';
@@ -94,8 +93,7 @@ class ChatBot extends Component {
     };
     const defaultCustomSettings = { delay: customDelay };
     if (api && steps.length === 0) {
-      const response = await axios.post(api.url, api);
-      const step = response.data;
+      const step = await getStepFromBackend(api);
       let settings = {};
       if (step.user) {
         settings = defaultUserSettings;
