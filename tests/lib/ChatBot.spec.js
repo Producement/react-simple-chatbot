@@ -1635,6 +1635,8 @@ describe('ChatBot', () => {
             id: 'ask-for-input',
             update: '{input}',
             updateUser: true,
+            parser: value => value.replace('$', ''),
+            validator: value => value.indexOf('$') !== -1,
             trigger: 'show-inputted-value'
           },
           {
@@ -1671,7 +1673,7 @@ describe('ChatBot', () => {
     });
 
     it('Action: enter some value', () => {
-      wrapper.setState({ inputValue: 'some input' });
+      wrapper.setState({ inputValue: '$some input' });
       wrapper.find(InputElementSelector).simulate('keyPress', { key: 'Enter' });
     });
 

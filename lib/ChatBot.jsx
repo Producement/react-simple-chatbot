@@ -483,6 +483,8 @@ class ChatBot extends Component {
         nextStep.user = false;
       } else {
         if (updateStep.updateUser) nextStep.user = updateStep.updateUser;
+        if (updateStep.validator) nextStep.validator = updateStep.validator;
+        if (updateStep.parser) nextStep.parser = updateStep.parser;
         nextStep.trigger = updateStep.trigger;
       }
     }
