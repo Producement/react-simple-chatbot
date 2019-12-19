@@ -1275,16 +1275,7 @@ describe('ChatBot', () => {
         }
       ];
 
-      const chatBot = (
-        <ChatBot
-          cache
-          cacheName={cacheName}
-          botDelay={0}
-          userDelay={0}
-          customDelay={0}
-          steps={steps}
-        />
-      );
+      const chatBot = <ChatBotWithoutDelay cache cacheName={cacheName} steps={steps} />;
 
       let wrapper;
 
@@ -1398,7 +1389,7 @@ describe('ChatBot', () => {
       }
     ];
 
-    const chatBot = <ChatBot botDelay={0} userDelay={0} customDelay={0} steps={steps} />;
+    const chatBot = <ChatBotWithoutDelay steps={steps} />;
 
     const wrapper = mount(chatBot);
 
@@ -1456,7 +1447,7 @@ describe('ChatBot', () => {
       }
     ];
 
-    const chatBot = <ChatBot botDelay={0} userDelay={0} customDelay={0} steps={steps} />;
+    const chatBot = <ChatBotWithoutDelay steps={steps} />;
 
     const wrapper = mount(chatBot);
 
@@ -1612,6 +1603,80 @@ describe('ChatBot', () => {
           done();
         }, 200);
       }, 150);
+    });
+  });
+
+  describe('Should work even when only update steps are present', () => {
+    const chatBot = (
+      <ChatBot
+        botDelay={0}
+        userDelay={0}
+        customDelay={0}
+        steps={[
+          {
+            id: '1',
+            message: 'First message',
+            trigger: 'ask-options'
+          },
+          {
+            id: 'ask-options',
+            update: '{option}',
+            updateOptions: [
+              { label: 'Option Label 1', value: 'optionValue1', trigger: 'show-chosen-option' },
+              { label: 'Option Label 2', value: 'optionValue2', trigger: 'show-chosen-option' }
+            ]
+          },
+          {
+            id: 'show-chosen-option',
+            message: 'You chose option: {option}',
+            trigger: 'ask-for-input'
+          },
+          {
+            id: 'ask-for-input',
+            update: '{input}',
+            updateUser: true,
+            trigger: 'show-inputted-value'
+          },
+          {
+            id: 'show-inputted-value',
+            message: 'You inputted: {input}',
+            end: true
+          }
+        ]}
+      />
+    );
+
+    const wrapper = mount(chatBot);
+
+    beforeEach(done => {
+      setTimeout(() => {
+        wrapper.update();
+        done();
+      }, 150);
+    });
+
+    it('Chat should render', () => {
+      expect(wrapper.find(ChatBot).length).to.equal(1);
+    });
+
+    it('Action: select first option among two options', () => {
+      const options = wrapper.find(OptionElementSelector);
+      expect(options.length).to.equal(2);
+
+      options.at(0).simulate('click');
+    });
+
+    it('should show selected option properly', () => {
+      expect(wrapper.text()).to.contain('You chose option: optionValue1');
+    });
+
+    it('Action: enter some value', () => {
+      wrapper.setState({ inputValue: 'some input' });
+      wrapper.find(InputElementSelector).simulate('keyPress', { key: 'Enter' });
+    });
+
+    it('should show inputted value properly', () => {
+      expect(wrapper.text()).to.contain('You inputted: some input');
     });
   });
 });
