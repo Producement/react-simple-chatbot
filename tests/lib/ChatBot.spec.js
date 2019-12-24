@@ -991,6 +991,7 @@ describe('ChatBot', () => {
               }
             ],
             trigger: ({ value }) => {
+              if (value.length > 2) return 'only-two-choices';
               if (
                 value.includes('apple') &&
                 value.includes('orange') &&
@@ -1002,7 +1003,11 @@ describe('ChatBot', () => {
             }
           },
           {
-            '@class': '.TextStep',
+            id: 'only-two-choices',
+            message: 'Please choose two or less fruits',
+            trigger: '{choices}'
+          },
+          {
             id: 'InvalidChoices',
             message: 'The valid choice would have been Apple and Orange',
             trigger: 'EndMessage'
@@ -1026,6 +1031,7 @@ describe('ChatBot', () => {
     // delay checking to let React update and render
     beforeEach(done => {
       setTimeout(() => {
+        wrapper.update();
         done();
       }, 100);
     });
@@ -1034,36 +1040,54 @@ describe('ChatBot', () => {
       expect(wrapper.find(ChatBot).length).to.equal(1);
     });
 
-    it('should ask with 3 choices', () => {
-      wrapper.update();
+    it('should ask with 3 choices and 1 submit button', () => {
       const choices = wrapper.find(MultipleChoiceElementSelector);
       expect(choices.length).to.equal(3);
-
-      // choose Apple and Orange
-      choices.at(0).simulate('click');
-      choices.at(2).simulate('click');
     });
 
     it('should have 1 submit button', () => {
-      wrapper.update();
+      const submitElement = wrapper.find(MultipleSubmitElementSelector);
+      expect(submitElement.length).to.equal(1);
+    });
+
+    it('Action: select all 3 choices and submit', () => {
+      const choices = wrapper.find(MultipleChoiceElementSelector);
       const submitElement = wrapper.find(MultipleSubmitElementSelector);
 
-      // submit
+      choices.at(0).simulate('click');
+      choices.at(1).simulate('click');
+      choices.at(2).simulate('click');
+
+      submitElement.simulate('click');
+    });
+
+    it('should re-ask', () => {
+      expect(wrapper.text()).to.contain('Please choose two or less fruits');
+      const choices = wrapper.find(MultipleChoiceElementSelector);
+      expect(choices.length).to.equal(3);
+      const submitElement = wrapper.find(MultipleSubmitElementSelector);
+      expect(submitElement.length).to.equal(1);
+    });
+
+    it('Action: select 2 choices and submit', () => {
+      const choices = wrapper.find(MultipleChoiceElementSelector);
+      const submitElement = wrapper.find(MultipleSubmitElementSelector);
+
+      choices.at(0).simulate('click');
+      choices.at(2).simulate('click');
+
       submitElement.simulate('click');
     });
 
     it('should replace MultipleChoiceStep with TextStep', () => {
-      wrapper.update();
       expect(wrapper.text()).to.contain('Apple, Orange');
     });
 
     it('should show proper text after choices selection', () => {
-      wrapper.update();
       expect(wrapper.text()).to.contain('Apple and Orange chosen');
     });
 
     it('should store data in step', () => {
-      wrapper.update();
       expect(wrapper.text()).to.contain('First choice: [\n "apple",\n "orange"\n]');
     });
   });

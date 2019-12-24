@@ -376,14 +376,6 @@ class ChatBot extends Component {
       const message = data.map(each => each.label).join(', ');
       delete currentStep.choices;
 
-      // Find the last state and append it to the new one
-      const lastSameSteps = renderedSteps.filter(step => step.id === currentStep.id);
-      const lastSameStep = lastSameSteps.length > 1 && lastSameSteps[lastSameSteps.length - 2];
-      let updatedValue = value;
-      if (Array.isArray(lastSameStep.value) && Array.isArray(value)) {
-        updatedValue = [...lastSameStep.value, ...updatedValue];
-      }
-
       currentStep = Object.assign(
         {},
         currentStep,
@@ -391,7 +383,7 @@ class ChatBot extends Component {
         {
           user: true,
           message,
-          value: updatedValue
+          value
         },
         this.metadata(currentStep)
       );
