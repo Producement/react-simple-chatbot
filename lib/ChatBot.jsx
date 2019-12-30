@@ -72,37 +72,18 @@ class ChatBot extends Component {
     const { api } = this.props;
     let { steps } = this.props;
     steps = steps || [];
-    const {
-      botDelay,
-      botAvatar,
-      cache,
-      cacheName,
-      customDelay,
-      enableMobileAutoFocus,
-      userAvatar,
-      userDelay
-    } = this.props;
+    const { cache, cacheName, enableMobileAutoFocus } = this.props;
     const chatSteps = {};
 
-    const defaultBotSettings = { delay: botDelay, avatar: botAvatar };
-    const defaultUserSettings = {
-      delay: userDelay,
-      avatar: userAvatar,
-      hideInput: false,
-      hideExtraControl: false
-    };
-    const defaultCustomSettings = { delay: customDelay };
+    const {
+      defaultBotSettings,
+      defaultUserSettings,
+      defaultCustomSettings
+    } = this.getDefaultSettings();
+
     if (api && steps.length === 0) {
-      const step = await getStepFromBackend(api);
-      let settings = {};
-      if (step.user) {
-        settings = defaultUserSettings;
-      } else if (step.message || step.asMessage) {
-        settings = defaultBotSettings;
-      } else if (step.component) {
-        settings = defaultCustomSettings;
-      }
-      chatSteps[step.id] = Object.assign({}, settings, schema.parse(step));
+      const step = await this.getStepFromApi();
+      chatSteps[step.id] = step;
       steps = [step];
     } else {
       for (let i = 0, len = steps.length; i < len; i += 1) {
@@ -194,6 +175,20 @@ class ChatBot extends Component {
       window.removeEventListener('resize', this.onResize);
     }
   }
+
+  getDefaultSettings = () => {
+    const { botDelay, botAvatar, userDelay, userAvatar, customDelay } = this.props;
+
+    const defaultBotSettings = { delay: botDelay, avatar: botAvatar };
+    const defaultUserSettings = {
+      delay: userDelay,
+      avatar: userAvatar,
+      hideInput: false,
+      hideExtraControl: false
+    };
+    const defaultCustomSettings = { delay: customDelay };
+    return { defaultBotSettings, defaultUserSettings, defaultCustomSettings };
+  };
 
   onNodeInserted = event => {
     const { currentTarget: target } = event;
@@ -476,11 +471,10 @@ class ChatBot extends Component {
   };
 
   getNextStep = async (currentStep, steps) => {
-    const { api } = this.props;
     const trigger = this.getTriggeredStep(currentStep.trigger, currentStep.value);
     let nextStep = steps[trigger]
       ? Object.assign({}, steps[trigger])
-      : await getStepFromBackend(api, trigger);
+      : await this.getStepFromApi(trigger);
     if (nextStep.message) {
       nextStep.message = this.getStepMessage(nextStep.message);
     } else if (nextStep.update) {
@@ -507,6 +501,27 @@ class ChatBot extends Component {
 
     nextStep.key = Random(24);
     return nextStep;
+  };
+
+  getStepFromApi = async trigger => {
+    const {
+      defaultBotSettings,
+      defaultUserSettings,
+      defaultCustomSettings
+    } = this.getDefaultSettings();
+
+    const { api } = this.props;
+    const step = await getStepFromBackend(api, trigger);
+    let settings = {};
+    if (step.user) {
+      settings = defaultUserSettings;
+    } else if (step.message || step.asMessage) {
+      settings = defaultBotSettings;
+    } else if (step.component) {
+      settings = defaultCustomSettings;
+    }
+
+    return Object.assign({}, settings, schema.parse(step));
   };
 
   saveValueAsStep = (value, id, renderedSteps, previousSteps) => {

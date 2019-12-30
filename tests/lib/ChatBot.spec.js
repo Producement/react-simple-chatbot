@@ -3,6 +3,8 @@ import { after, before, beforeEach, describe, it } from 'mocha';
 import { expect } from 'chai';
 import { mount } from 'enzyme';
 import { parse } from 'flatted';
+import MockAdapter from 'axios-mock-adapter';
+import axios from 'axios';
 import ChatBot from '../../lib/ChatBot';
 import { ChatBotContainer, FloatButton, Header, HeaderIcon } from '../../lib/components';
 import { CloseIcon } from '../../lib/icons';
@@ -1612,6 +1614,57 @@ describe('ChatBot', () => {
           done();
         }, 200);
       }, 150);
+    });
+  });
+
+  describe('Fetching steps one-by-one from backend', () => {
+    const apiUrl = 'api';
+    const api = {
+      url: apiUrl,
+      chatId: null,
+      stateId: null
+    };
+    const chatBotWithApi = (
+      <ChatBot botDelay={0} userDelay={0} customDelay={0} api={api} steps={[]} />
+    );
+    const axiosMock = new MockAdapter(axios);
+
+    let wrapper;
+
+    before(() => {
+      axiosMock.onPost(apiUrl).replyOnce(200, {
+        id: '1',
+        message: 'This is the first text',
+        trigger: '2'
+      });
+
+      axiosMock.onPost(apiUrl).replyOnce(200, {
+        id: '2',
+        message: 'This is the last text',
+        end: true
+      });
+
+      wrapper = mount(chatBotWithApi);
+    });
+
+    // delay checking to let React update and render
+    beforeEach(done => {
+      setTimeout(() => {
+        wrapper.update();
+        done();
+      }, 150);
+    });
+
+    it('should render', () => {
+      expect(wrapper.find(ChatBot).length).to.equal(1);
+    });
+
+    it('should get and display the first step', () => {
+      expect(wrapper.text()).to.contain('This is the first text');
+    });
+
+    it('should get and display the second step', () => {
+      expect(wrapper.text()).to.contain('This is the last text');
     });
   });
 });
