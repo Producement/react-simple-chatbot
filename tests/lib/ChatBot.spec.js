@@ -1636,6 +1636,35 @@ describe('ChatBot', () => {
       axiosMock.onGet(nextStepUrl).replyOnce(200, {
         id: '2',
         message: 'This is the last text',
+        trigger: '{options}'
+      });
+
+      axiosMock.onGet(nextStepUrl).replyOnce(200, {
+        id: '{options}',
+        options: [
+          { label: 'Option Label 1', value: 'Option Value 1', trigger: 'update-options' },
+          { label: 'Option Label 2', value: 'Option Value 2', trigger: 'update-options' }
+        ]
+      });
+
+      axiosMock.onGet(nextStepUrl).replyOnce(200, {
+        id: 'update-options',
+        update: '{options}',
+        updateOptions: [
+          { label: 'New Label 1', value: 'New Value 1', trigger: '{input}' },
+          { label: 'New Label 2', value: 'New Value 2', trigger: '{input}' }
+        ]
+      });
+
+      axiosMock.onGet(nextStepUrl).replyOnce(200, {
+        id: '{input}',
+        user: true,
+        trigger: 'update-input'
+      });
+
+      axiosMock.onGet(nextStepUrl).replyOnce(200, {
+        id: 'update-input',
+        update: '{input}',
         end: true
       });
 
@@ -1660,6 +1689,48 @@ describe('ChatBot', () => {
 
     it('should get and display the second step', () => {
       expect(wrapper.text()).to.contain('This is the last text');
+    });
+
+    it('should ask with 2 options', () => {
+      const options = wrapper.find(OptionElementSelector);
+      expect(options.length).to.equal(2);
+      expect(options.at(0).text()).to.equal('Option Label 1');
+      expect(options.at(1).text()).to.equal('Option Label 2');
+    });
+
+    it('Action: click first option', () => {
+      const options = wrapper.find(OptionElementSelector);
+      options.at(0).simulate('click');
+    });
+
+    it('should ask with 2 updated options', () => {
+      const options = wrapper.find(OptionElementSelector);
+      expect(options.length).to.equal(2);
+      expect(options.at(0).text()).to.equal('New Label 1');
+      expect(options.at(1).text()).to.equal('New Label 2');
+    });
+
+    it('Action: click first updated option', () => {
+      const options = wrapper.find(OptionElementSelector);
+      options.at(0).simulate('click');
+    });
+
+    it('Action: give input', () => {
+      wrapper.setState({ inputValue: 'Input' });
+      wrapper.find(InputElementSelector).simulate('keyPress', { key: 'Enter' });
+    });
+
+    it('should accept given input', () => {
+      expect(wrapper.text()).to.contain('Input');
+    });
+
+    it('Action: give update input', () => {
+      wrapper.setState({ inputValue: 'Update Input' });
+      wrapper.find(InputElementSelector).simulate('keyPress', { key: 'Enter' });
+    });
+
+    it('should accept given input', () => {
+      expect(wrapper.text()).to.contain('Update Input');
     });
   });
 });

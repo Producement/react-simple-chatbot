@@ -521,7 +521,14 @@ class ChatBot extends Component {
       settings = defaultCustomSettings;
     }
 
-    return Object.assign({}, settings, schema.parse(step));
+    const completeStep = Object.assign({}, settings, schema.parse(step));
+
+    // append to steps
+    const { steps } = this.state;
+    steps[completeStep.id] = completeStep;
+    this.setState({ steps });
+
+    return completeStep;
   };
 
   saveValueAsStep = (value, id, renderedSteps, previousSteps) => {
