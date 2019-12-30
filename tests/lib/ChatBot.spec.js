@@ -1618,27 +1618,22 @@ describe('ChatBot', () => {
   });
 
   describe('Fetching steps one-by-one from backend', () => {
-    const apiUrl = 'api';
-    const api = {
-      url: apiUrl,
-      chatId: null,
-      stateId: null
-    };
+    const nextStepUrl = 'api';
     const chatBotWithApi = (
-      <ChatBot botDelay={0} userDelay={0} customDelay={0} api={api} steps={[]} />
+      <ChatBot botDelay={0} userDelay={0} customDelay={0} nextStepUrl={nextStepUrl} steps={[]} />
     );
     const axiosMock = new MockAdapter(axios);
 
     let wrapper;
 
     before(() => {
-      axiosMock.onPost(apiUrl).replyOnce(200, {
+      axiosMock.onGet(nextStepUrl).replyOnce(200, {
         id: '1',
         message: 'This is the first text',
         trigger: '2'
       });
 
-      axiosMock.onPost(apiUrl).replyOnce(200, {
+      axiosMock.onGet(nextStepUrl).replyOnce(200, {
         id: '2',
         message: 'This is the last text',
         end: true

@@ -69,7 +69,7 @@ class ChatBot extends Component {
   }
 
   async componentDidMount() {
-    const { api } = this.props;
+    const { nextStepUrl } = this.props;
     let { steps } = this.props;
     steps = steps || [];
     const { cache, cacheName, enableMobileAutoFocus } = this.props;
@@ -81,7 +81,7 @@ class ChatBot extends Component {
       defaultCustomSettings
     } = this.getDefaultSettings();
 
-    if (api && steps.length === 0) {
+    if (nextStepUrl && steps.length === 0) {
       const step = await this.getStepFromApi();
       chatSteps[step.id] = step;
       steps = [step];
@@ -510,8 +510,8 @@ class ChatBot extends Component {
       defaultCustomSettings
     } = this.getDefaultSettings();
 
-    const { api } = this.props;
-    const step = await getStepFromBackend(api, trigger);
+    const { nextStepUrl } = this.props;
+    const step = await getStepFromBackend(nextStepUrl, trigger);
     let settings = {};
     if (step.user) {
       settings = defaultUserSettings;
@@ -975,7 +975,7 @@ class ChatBot extends Component {
 }
 
 ChatBot.propTypes = {
-  api: PropTypes.objectOf(PropTypes.any),
+  nextStepUrl: PropTypes.string,
   avatarStyle: PropTypes.objectOf(PropTypes.any),
   botAvatar: PropTypes.string,
   botDelay: PropTypes.number,
@@ -1029,7 +1029,7 @@ ChatBot.propTypes = {
 };
 
 ChatBot.defaultProps = {
-  api: undefined,
+  nextStepUrl: undefined,
   steps: undefined,
   avatarStyle: {},
   botDelay: 1000,
