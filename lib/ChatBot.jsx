@@ -61,8 +61,7 @@ class ChatBot extends Component {
       inputValue: '',
       inputInvalid: false,
       speaking: false,
-      recognitionEnable: props.recognitionEnable && Recognition.isSupported(),
-      defaultUserSettings: {}
+      recognitionEnable: props.recognitionEnable && Recognition.isSupported()
     };
 
     this.speak = speakFn(props.speechSynthesis);
@@ -171,6 +170,7 @@ class ChatBot extends Component {
       hideExtraControl: false
     };
     const defaultCustomSettings = { delay: customDelay };
+
     return { defaultBotSettings, defaultUserSettings, defaultCustomSettings };
   };
 
@@ -292,7 +292,8 @@ class ChatBot extends Component {
 
   triggerNextStep = async data => {
     const { enableMobileAutoFocus } = this.props;
-    const { defaultUserSettings, previousSteps, renderedSteps, steps } = this.state;
+    const { previousSteps, renderedSteps, steps } = this.state;
+    const { defaultUserSettings } = this.getDefaultSettings();
 
     let { currentStep, previousStep } = this.state;
 
@@ -646,7 +647,8 @@ class ChatBot extends Component {
   };
 
   submitUserMessage = () => {
-    const { defaultUserSettings, inputValue, previousSteps, renderedSteps } = this.state;
+    const { inputValue, previousSteps, renderedSteps } = this.state;
+    const { defaultUserSettings } = this.getDefaultSettings();
     let { currentStep } = this.state;
 
     const isInvalid = currentStep.validator && this.checkInvalidInput();
