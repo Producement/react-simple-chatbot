@@ -69,36 +69,22 @@ class ChatBot extends Component {
   }
 
   async componentDidMount() {
-    const { nextStepUrl } = this.props;
+    const { nextStepUrl, parseStep } = this.props;
     let { steps } = this.props;
     steps = steps || [];
     const { cache, cacheName, enableMobileAutoFocus } = this.props;
     const chatSteps = {};
 
-    const {
-      defaultBotSettings,
-      defaultUserSettings,
-      defaultCustomSettings
-    } = this.getDefaultSettings();
-
     if (nextStepUrl && steps.length === 0) {
       const step = await this.getStepFromApi();
-      chatSteps[step.id] = step;
-      steps = [step];
+      const parsedStep = parseStep ? parseStep(step) : step;
+      chatSteps[step.id] = parsedStep;
+      steps = [parsedStep];
     } else {
       for (let i = 0, len = steps.length; i < len; i += 1) {
         const step = steps[i];
-        let settings = {};
 
-        if (step.user) {
-          settings = defaultUserSettings;
-        } else if (step.message || step.asMessage) {
-          settings = defaultBotSettings;
-        } else if (step.component) {
-          settings = defaultCustomSettings;
-        }
-
-        chatSteps[step.id] = Object.assign({}, settings, schema.parse(step));
+        chatSteps[step.id] = this.assignDefaultSetting(schema.parse(step));
       }
       // schema.checkInvalidIds(chatSteps);
     }
@@ -150,7 +136,6 @@ class ChatBot extends Component {
 
     this.setState({
       currentStep,
-      defaultUserSettings,
       previousStep,
       previousSteps,
       renderedSteps,
@@ -504,14 +489,26 @@ class ChatBot extends Component {
   };
 
   getStepFromApi = async trigger => {
+    const { nextStepUrl } = this.props;
+    const step = await getStepFromBackend(nextStepUrl, trigger);
+
+    const completeStep = this.assignDefaultSetting(schema.parse(step));
+
+    // append to steps
+    const { steps } = this.state;
+    steps[completeStep.id] = completeStep;
+    this.setState({ steps });
+
+    return completeStep;
+  };
+
+  assignDefaultSetting = step => {
     const {
       defaultBotSettings,
       defaultUserSettings,
       defaultCustomSettings
     } = this.getDefaultSettings();
 
-    const { nextStepUrl } = this.props;
-    const step = await getStepFromBackend(nextStepUrl, trigger);
     let settings = {};
     if (step.user) {
       settings = defaultUserSettings;
@@ -521,14 +518,7 @@ class ChatBot extends Component {
       settings = defaultCustomSettings;
     }
 
-    const completeStep = Object.assign({}, settings, schema.parse(step));
-
-    // append to steps
-    const { steps } = this.state;
-    steps[completeStep.id] = completeStep;
-    this.setState({ steps });
-
-    return completeStep;
+    return Object.assign({}, settings, step);
   };
 
   saveValueAsStep = (value, id, renderedSteps, previousSteps) => {
@@ -983,6 +973,7 @@ class ChatBot extends Component {
 
 ChatBot.propTypes = {
   nextStepUrl: PropTypes.string,
+  parseStep: PropTypes.func,
   avatarStyle: PropTypes.objectOf(PropTypes.any),
   botAvatar: PropTypes.string,
   botDelay: PropTypes.number,
@@ -1037,6 +1028,7 @@ ChatBot.propTypes = {
 
 ChatBot.defaultProps = {
   nextStepUrl: undefined,
+  parseStep: undefined,
   steps: undefined,
   avatarStyle: {},
   botDelay: 1000,
