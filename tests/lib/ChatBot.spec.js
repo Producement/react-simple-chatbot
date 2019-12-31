@@ -1617,10 +1617,106 @@ describe('ChatBot', () => {
     });
   });
 
+  describe('Parse step', () => {
+    // eslint-disable-next-line no-unused-vars
+    const getTrigger = trigger => ({ value, steps }) => {
+      for (const condition in trigger) {
+        // eslint-disable-next-line no-eval,no-prototype-builtins
+        if (trigger.hasOwnProperty(condition) && eval(condition)) {
+          return trigger[condition];
+        }
+      }
+
+      throw new Error(`Missing condition for value: ${value}`);
+    };
+
+    const parseStep = step => {
+      if (typeof step.trigger === 'object') {
+        step = { ...step, trigger: getTrigger(step.trigger) };
+      }
+      return step;
+    };
+
+    const steps = [
+      {
+        id: 'loop',
+        message: 'Please enter "Stop" to stop looping',
+        trigger: 'ask-input'
+      },
+      {
+        id: 'ask-input',
+        user: true,
+        trigger: {
+          'value === "Stop"': 'end-step',
+          'value !== "Stop"': 'loop'
+        }
+      },
+      {
+        id: 'end-step',
+        message: 'This is the end',
+        end: true
+      }
+    ];
+
+    const chatBot = (
+      <ChatBot botDelay={0} userDelay={0} customDelay={0} parseStep={parseStep} steps={steps} />
+    );
+
+    const wrapper = mount(chatBot);
+
+    // delay checking to let React update and render
+    beforeEach(done => {
+      setTimeout(() => {
+        wrapper.update();
+        done();
+      }, 150);
+    });
+
+    it('should render', () => {
+      expect(wrapper.find(ChatBot).length).to.equal(1);
+    });
+
+    it("Action: enter 'Don't' in input", () => {
+      wrapper.setState({ inputValue: 'Stop' });
+      wrapper.find(InputElementSelector).simulate('keyPress', { key: 'Enter' });
+    });
+
+    it('should stop loop', () => {
+      expect(wrapper.text()).to.contain('Stop');
+      expect(wrapper.text()).to.contain('This is the end');
+    });
+  });
+
   describe('Fetching steps one-by-one from backend', () => {
+    // eslint-disable-next-line no-unused-vars
+    const getTrigger = trigger => ({ value, steps }) => {
+      for (const condition in trigger) {
+        // eslint-disable-next-line no-eval,no-prototype-builtins
+        if (trigger.hasOwnProperty(condition) && eval(condition)) {
+          return trigger[condition];
+        }
+      }
+
+      throw new Error(`Missing condition for value: ${value}`);
+    };
+
+    const parseStep = step => {
+      if (typeof step.trigger === 'object') {
+        step = { ...step, trigger: getTrigger(step.trigger) };
+      }
+      return step;
+    };
+
     const nextStepUrl = 'api';
     const chatBotWithApi = (
-      <ChatBot botDelay={0} userDelay={0} customDelay={0} nextStepUrl={nextStepUrl} steps={[]} />
+      <ChatBot
+        botDelay={0}
+        userDelay={0}
+        customDelay={0}
+        nextStepUrl={nextStepUrl}
+        steps={[]}
+        parseStep={parseStep}
+      />
     );
     const axiosMock = new MockAdapter(axios);
 
@@ -1659,12 +1755,21 @@ describe('ChatBot', () => {
       axiosMock.onGet(nextStepUrl).replyOnce(200, {
         id: '{input}',
         user: true,
-        trigger: 'update-input'
+        trigger: {
+          'value === "Go to update"': 'update-input',
+          'value !== "Go to update"': 'chat-end'
+        }
       });
 
       axiosMock.onGet(nextStepUrl).replyOnce(200, {
         id: 'update-input',
         update: '{input}',
+        trigger: 'chat-end'
+      });
+
+      axiosMock.onGet(nextStepUrl).replyOnce(200, {
+        id: 'chat-end',
+        message: 'Chat has ended',
         end: true
       });
 
@@ -1716,12 +1821,12 @@ describe('ChatBot', () => {
     });
 
     it('Action: give input', () => {
-      wrapper.setState({ inputValue: 'Input' });
+      wrapper.setState({ inputValue: 'Go to update' });
       wrapper.find(InputElementSelector).simulate('keyPress', { key: 'Enter' });
     });
 
     it('should accept given input', () => {
-      expect(wrapper.text()).to.contain('Input');
+      expect(wrapper.text()).to.contain('Go to update');
     });
 
     it('Action: give update input', () => {
@@ -1731,6 +1836,10 @@ describe('ChatBot', () => {
 
     it('should accept given input', () => {
       expect(wrapper.text()).to.contain('Update Input');
+    });
+
+    it('should reach the end of chat', () => {
+      expect(wrapper.text()).to.contain('Chat has ended');
     });
   });
 });
