@@ -77,12 +77,11 @@ class ChatBot extends Component {
 
     if (nextStepUrl && steps.length === 0) {
       const step = await this.getStepFromApi();
-      const parsedStep = parseStep ? parseStep(step) : step;
-      chatSteps[step.id] = parsedStep;
-      steps = [parsedStep];
+      chatSteps[step.id] = step;
+      steps = [step];
     } else {
       for (let i = 0, len = steps.length; i < len; i += 1) {
-        const step = steps[i];
+        const step = parseStep ? parseStep(steps[i]) : steps[i];
 
         chatSteps[step.id] = this.assignDefaultSetting(schema.parse(step));
       }
@@ -489,10 +488,11 @@ class ChatBot extends Component {
   };
 
   getStepFromApi = async trigger => {
-    const { nextStepUrl } = this.props;
+    const { nextStepUrl, parseStep } = this.props;
     const step = await getStepFromBackend(nextStepUrl, trigger);
 
-    const completeStep = this.assignDefaultSetting(schema.parse(step));
+    const parsedStep = parseStep ? parseStep(step) : step;
+    const completeStep = this.assignDefaultSetting(schema.parse(parsedStep));
 
     // append to steps
     const { steps } = this.state;
