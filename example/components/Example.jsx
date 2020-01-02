@@ -42,24 +42,28 @@ const steps = [
         trigger: '64.736b.38ba542b1-c3a0.618c9ac28'
       }
     ],
-    evalExpression: ''
+    evalExpression: '',
+  },
+  {
+    id: '46.905c.77965b6d2-5961.decf03a99',
+    message: 'You pressed great'
+  },
+  {
+    id: '64.736b.38ba542b1-c3a0.618c9ac28',
+    message: 'You are surprised'
   }
 ];
 
 const ThemedExample = () => (
   <ThemeProvider theme={otherFontTheme}>
     <React.StrictMode>
-      {/* <ChatBot */}
-      {/*  url="/api/v1/chats/nextStep/1SLK9Bu1BAfttq--N1OM2t7ydp-X5Ja3A?stateId=93o2q" */}
-      {/*  steps={steps} */}
-      {/* /> */}
+      {/*<ChatBot*/}
+      {/*  cache={true}*/}
+      {/*  steps={steps}*/}
+      {/*/>*/}
       <ChatBot
-        // steps={steps}
-        api={{
-          url: '/api/v1/chats/nextStep/',
-          stateId: 'pmjsmv',
-          id: '1SLK9Bu1BAfttq--N1OM2t7ydp-X5Ja3A'
-        }}
+        cache={true}
+        nextStepUrl='/api/v1/chats/1SLK9Bu1BAfttq--N1OM2t7ydp-X5Ja3A/states/pmjsmv/nextStep/'
       />
     </React.StrictMode>
   </ThemeProvider>

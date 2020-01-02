@@ -84,7 +84,7 @@ class ChatBot extends Component {
 
         chatSteps[step.id] = this.assignDefaultSetting(schema.parse(step));
       }
-      // schema.checkInvalidIds(chatSteps);
+      schema.checkInvalidIds(chatSteps);
     }
 
     const firstStep = steps[0];
@@ -113,12 +113,13 @@ class ChatBot extends Component {
       window.addEventListener('resize', this.onResize);
     }
 
-    const { currentStep, previousStep, previousSteps, renderedSteps } = storage.getData(
+    const { currentStep, previousStep, previousSteps, renderedSteps } = await storage.getData(
       {
         cacheName,
         cache,
         firstStep,
-        steps: chatSteps
+        steps: chatSteps,
+        getStepFromApi: this.getStepFromApi
       },
       () => {
         // focus input if last step cached is a user step

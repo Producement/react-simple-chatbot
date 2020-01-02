@@ -311,6 +311,7 @@ describe('ChatBot', () => {
     );
 
     it('should be rendered without input', () => {
+      wrapper.update();
       expect(wrapper.find(InputElementSelector)).to.have.length(0);
     });
   });
@@ -378,6 +379,7 @@ describe('ChatBot', () => {
     );
 
     it("should be rendered with input to autocomplete on 'firstname'", () => {
+      wrapper.update();
       expect(wrapper.find(InputElementSelector).props().autoComplete).to.be.equal('firstname');
     });
   });
@@ -643,6 +645,7 @@ describe('ChatBot', () => {
     // delay checking to let React update and render
     beforeEach(done => {
       setTimeout(() => {
+        wrapper.update();
         done();
       }, 200);
     });
@@ -1076,13 +1079,11 @@ describe('ChatBot', () => {
 
       const steps = [
         {
-          '@class': '.TextStep',
           id: '1',
           message: 'Choose an option',
           trigger: '{choice}'
         },
         {
-          '@class': '.UserStep',
           id: '{choice}',
           options: [
             {
@@ -1098,9 +1099,28 @@ describe('ChatBot', () => {
           ]
         },
         {
-          '@class': '.TextStep',
           id: 'display',
           message: 'You chose {choice}',
+          trigger: '{next_choice}'
+        },
+        {
+          id: '{next_choice}',
+          options: [
+            {
+              label: 'Next Choice 1',
+              value: 'nextChoice1',
+              trigger: 'next-display'
+            },
+            {
+              label: 'Next Choice 2',
+              value: 'nextChoice2',
+              trigger: 'next-display'
+            }
+          ]
+        },
+        {
+          id: 'next-display',
+          message: 'You chose {next_choice}',
           end: true
         }
       ];
@@ -1115,11 +1135,16 @@ describe('ChatBot', () => {
         />
       );
 
-      let wrapper = mount(chatBot);
+      let wrapper;
+
+      before(() => {
+        wrapper = mount(chatBot);
+      });
 
       // delay checking to let React update and render
       beforeEach(done => {
         setTimeout(() => {
+          wrapper.update();
           done();
         }, 150);
       });
@@ -1128,10 +1153,11 @@ describe('ChatBot', () => {
         expect(wrapper.find(ChatBot).length).to.equal(1);
       });
 
-      it('should show options properly after reloading', () => {
+      it('Action: reload at option step', () => {
         wrapper = mount(chatBot);
-        wrapper.update();
+      });
 
+      it('should show options properly after reloading', () => {
         const options = wrapper.find(OptionElementSelector);
         expect(options.length).to.equal(2);
         expect(options.at(0).text()).to.equal('Choice 1');
@@ -1141,9 +1167,26 @@ describe('ChatBot', () => {
       });
 
       it('should work properly after reloaded option is selected', () => {
-        wrapper.update();
         expect(wrapper.text()).to.contain('Choice 1');
         expect(wrapper.text()).to.contain('You chose choice1');
+      });
+
+      it('Action: reload at next options step', () => {
+        wrapper = mount(chatBot);
+      });
+
+      it('should show next options properly after reloading', () => {
+        const options = wrapper.find(OptionElementSelector);
+        // expect(options.length).to.equal(2);
+        expect(options.at(0).text()).to.equal('Next Choice 1');
+        expect(options.at(1).text()).to.equal('Next Choice 2');
+
+        options.at(0).simulate('click');
+      });
+
+      it('should work properly after reloaded next option is selected', () => {
+        expect(wrapper.text()).to.contain('Next Choice 1');
+        expect(wrapper.text()).to.contain('You chose nextChoice1');
       });
 
       it('should still be rendering', () => {
@@ -1175,13 +1218,11 @@ describe('ChatBot', () => {
           customDelay={0}
           steps={[
             {
-              '@class': '.TextStep',
               id: '1',
               message: 'Enter your salary!',
               trigger: '{salary}'
             },
             {
-              '@class': '.UserStep',
               id: '{salary}',
               user: true,
               validator,
@@ -1189,7 +1230,6 @@ describe('ChatBot', () => {
               trigger: 'display'
             },
             {
-              '@class': '.TextStep',
               id: 'display',
               message: 'Your salary is {salary}',
               end: true
@@ -1407,6 +1447,7 @@ describe('ChatBot', () => {
     // delay checking to let React update and render
     beforeEach(done => {
       setTimeout(() => {
+        wrapper.update();
         done();
       }, 150);
     });
@@ -1508,6 +1549,7 @@ describe('ChatBot', () => {
     // delay checking to let React update and render
     beforeEach(done => {
       setTimeout(() => {
+        wrapper.update();
         done();
       }, 150);
     });
@@ -1535,14 +1577,14 @@ describe('ChatBot', () => {
   });
 
   describe('Read-only chat', () => {
+    let wrapper;
+
     // delay checking to let React update and render
     beforeEach(done => {
       setTimeout(() => {
         done();
       }, 150);
     });
-
-    let wrapper;
 
     it('should disable Options on read-only', done => {
       wrapper = mount(
@@ -1568,6 +1610,7 @@ describe('ChatBot', () => {
       );
 
       setTimeout(() => {
+        wrapper.update();
         const options = wrapper.find(OptionElementSelector);
 
         options.at(0).simulate('click');
@@ -1603,6 +1646,7 @@ describe('ChatBot', () => {
       );
 
       setTimeout(() => {
+        wrapper.update();
         const choices = wrapper.find(MultipleChoiceElementSelector);
         const submitButton = wrapper.find(MultipleSubmitElementSelector);
 

@@ -36,7 +36,7 @@ describe('Storage', () => {
     expect(localStorage.getItem('storage_cache')).to.equal(stringifiedState);
   });
 
-  it('extracts data', () => {
+  it('extracts data', async () => {
     const steps = {
       '1': {
         '@class': '.TextStep',
@@ -67,7 +67,7 @@ describe('Storage', () => {
 
     const stringifiedState = storage.setData('storage_cache', state);
 
-    const { currentStep, previousStep, renderedSteps } = storage.getData({
+    const { currentStep, previousStep, renderedSteps } = await storage.getData({
       cacheName: 'storage_cache',
       cache: stringifiedState,
       firstStep: steps['1'],
@@ -81,7 +81,7 @@ describe('Storage', () => {
     });
   });
 
-  it('marks all rendered steps as rendered except the last one', () => {
+  it('marks all rendered steps as rendered except the last one', async () => {
     const steps = {
       '1': {
         '@class': '.TextStep',
@@ -125,7 +125,7 @@ describe('Storage', () => {
 
     const stringifiedState = storage.setData('storage_cache', state);
 
-    const stateFromStorage = storage.getData({
+    const stateFromStorage = await storage.getData({
       cacheName: 'storage_cache',
       cache: stringifiedState,
       firstStep: steps['1'],
@@ -143,7 +143,7 @@ describe('Storage', () => {
     expect(stateFromStorage.previousStep).to.eql({ ...previousStep, rendered: true, delay: 0 });
   });
 
-  it('marks every steps in renderedSteps rendered except last one if current step is a UserStep', () => {
+  it('marks every steps in renderedSteps rendered except last one if current step is a UserStep', async () => {
     const steps = {
       '1': {
         id: '1',
@@ -170,7 +170,7 @@ describe('Storage', () => {
 
     const stringifiedState = storage.setData('storage_cache', state);
 
-    const { currentStep, renderedSteps, previousStep } = storage.getData(
+    const { currentStep, renderedSteps, previousStep } = await storage.getData(
       {
         cacheName: 'storage_cache',
         cache: stringifiedState,
@@ -188,7 +188,7 @@ describe('Storage', () => {
     expect(previousStep).to.eql({ ...state.previousStep, rendered: true, delay: 0 });
   });
 
-  it('marks all renderedSteps as rendered except the last one when currentStep is an OptionStep', () => {
+  it('marks all renderedSteps as rendered except the last one when currentStep is an OptionStep', async () => {
     const steps = {
       '1': {
         id: '1',
@@ -213,7 +213,7 @@ describe('Storage', () => {
 
     const stringifiedState = storage.setData('storage_cache', state);
 
-    const { currentStep, renderedSteps, previousStep } = storage.getData({
+    const { currentStep, renderedSteps, previousStep } = await storage.getData({
       cacheName: 'storage_cache',
       cache: stringifiedState,
       firstStep: steps['1'],
@@ -231,7 +231,7 @@ describe('Storage', () => {
     expect(previousStep).to.eql({ ...state.previousStep, rendered: true, delay: 0 });
   });
 
-  it('reassigns parser and validator to current UserStep', () => {
+  it('reassigns parser and validator to current UserStep', async () => {
     const steps = {
       '{userInput}': {
         id: '{userInput}',
@@ -248,7 +248,7 @@ describe('Storage', () => {
 
     const stringifiedState = storage.setData('storage_cache', state);
 
-    const { currentStep } = storage.getData(
+    const { currentStep } = await storage.getData(
       {
         cacheName: 'storage_cache',
         cache: stringifiedState,
@@ -262,7 +262,7 @@ describe('Storage', () => {
     expect(currentStep.validator).to.equal(steps['{userInput}'].validator);
   });
 
-  it('reassigns trigger function to current options step', () => {
+  it('reassigns trigger function to current options step', async () => {
     const function1 = () => {};
     const function2 = () => {};
 
@@ -285,7 +285,7 @@ describe('Storage', () => {
 
     const stringifiedState = storage.setData('storage_cache', state);
 
-    const { currentStep } = storage.getData(
+    const { currentStep } = await storage.getData(
       {
         cacheName: 'storage_cache',
         cache: stringifiedState,
@@ -299,7 +299,7 @@ describe('Storage', () => {
     expect(currentStep.options[1].trigger).to.equal(function2);
   });
 
-  it('reassigns trigger to an updated option step', () => {
+  it('reassigns trigger to an updated option step', async () => {
     const triggerFunction1 = () => {};
     const triggerFunction2 = () => {};
 
@@ -346,7 +346,7 @@ describe('Storage', () => {
 
     const stringifiedState = storage.setData('storage_cache', state);
 
-    const { currentStep } = storage.getData(
+    const { currentStep } = await storage.getData(
       {
         cacheName: 'storage_cache',
         cache: stringifiedState,
@@ -360,7 +360,7 @@ describe('Storage', () => {
     expect(currentStep.options[1].trigger).to.equal(newTriggerFunction2);
   });
 
-  it('reassigns trigger to an updated user step', () => {
+  it('reassigns trigger to an updated user step', async () => {
     const triggerFunction = () => {};
     const newTriggerFunction = () => {};
 
@@ -396,7 +396,7 @@ describe('Storage', () => {
 
     const stringifiedState = storage.setData('storage_cache', state);
 
-    const { currentStep } = storage.getData(
+    const { currentStep } = await storage.getData(
       {
         cacheName: 'storage_cache',
         cache: stringifiedState,
