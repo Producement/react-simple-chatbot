@@ -1,6 +1,9 @@
 import { describe, it } from 'mocha';
 import { expect } from 'chai';
+import MockAdapter from 'axios-mock-adapter';
+import axios from 'axios';
 import * as storage from '../../lib/storage';
+import { getStepFromBackend } from '../../lib/utils';
 
 describe('Storage', () => {
   it('stores data', () => {
@@ -236,6 +239,8 @@ describe('Storage', () => {
       '{userInput}': {
         id: '{userInput}',
         user: true,
+        parser: () => {},
+        validator: () => {},
         end: true
       }
     };
@@ -407,5 +412,49 @@ describe('Storage', () => {
     );
 
     expect(currentStep.trigger).to.equal(newTriggerFunction);
+  });
+
+  it('uses fetch to update parsed step', async () => {
+    const steps = {};
+    const state = {
+      currentStep: {
+        id: '{userInput}',
+        user: true,
+        end: true
+      },
+      renderedSteps: [],
+      previousSteps: [],
+      previousStep: {}
+    };
+
+    const stringifiedState = storage.setData('storage_cache', state);
+
+    const url = 'url';
+    const axiosMock = new MockAdapter(axios);
+    const parser = () => {};
+    const validator = () => {};
+
+    axiosMock.onGet(url).replyOnce(200, {
+      id: '{userInput}',
+      user: true,
+      end: true
+    });
+
+    const { currentStep } = await storage.getData(
+      {
+        cacheName: 'storage_cache',
+        cache: stringifiedState,
+        firstStep: state.currentStep,
+        getStepFromApi: async trigger => {
+          const step = await getStepFromBackend(url, trigger);
+          return { ...step, parser, validator };
+        },
+        steps
+      },
+      () => {}
+    );
+
+    expect(currentStep.parser).to.equal(parser);
+    expect(currentStep.validator).to.equal(validator);
   });
 });
