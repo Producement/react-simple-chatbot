@@ -63,7 +63,7 @@ const ThemedExample = () => (
       {/*/>*/}
       <ChatBot
         cache={true}
-        nextStepUrl='/api/v1/chats/1SLK9Bu1BAfttq--N1OM2t7ydp-X5Ja3A/states/pmjsmv/nextStep/'
+        nextStepUrl='/api/v1/chats/1SLK9Bu1BAfttq--N1OM2t7ydp-X5Ja3A/models/null/modelKey/null/states/saladus/nextStep/'
       />
     </React.StrictMode>
   </ThemeProvider>
