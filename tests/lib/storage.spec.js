@@ -457,4 +457,56 @@ describe('Storage', () => {
     expect(currentStep.parser).to.equal(parser);
     expect(currentStep.validator).to.equal(validator);
   });
+
+  it('uses fetch to update parsed update user step', async () => {
+    const steps = {};
+    const state = {
+      currentStep: {
+        id: '{userInput}',
+        user: true,
+        updatedBy: 'update-user-input',
+        end: true
+      },
+      renderedSteps: [],
+      previousSteps: [],
+      previousStep: {}
+    };
+
+    const stringifiedState = storage.setData('storage_cache', state);
+
+    const url = 'url';
+    const axiosMock = new MockAdapter(axios);
+    const parser = () => {};
+    const validator = () => {};
+
+    axiosMock.onGet(url, { params: { stepId: '{userInput}' } }).replyOnce(200, {
+      id: '{userInput}',
+      user: true,
+      end: true
+    });
+
+    axiosMock.onGet(url, { params: { stepId: 'update-user-input' } }).replyOnce(200, {
+      id: 'update-user-input',
+      user: true,
+      end: true
+    });
+
+    const { currentStep } = await storage.getData(
+      {
+        cacheName: 'storage_cache',
+        cache: stringifiedState,
+        firstStep: state.currentStep,
+        getStepFromApi: async trigger => {
+          const step = await getStepFromBackend(url, trigger);
+          if (trigger === '{userInput}') return { ...step, parser, validator };
+          return step;
+        },
+        steps
+      },
+      () => {}
+    );
+
+    expect(currentStep.parser).to.equal(parser);
+    expect(currentStep.validator).to.equal(validator);
+  });
 });

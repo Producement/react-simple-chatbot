@@ -1121,6 +1121,27 @@ describe('ChatBot', () => {
         {
           id: 'next-display',
           message: 'You chose {next_choice}',
+          trigger: 'update-choice'
+        },
+        {
+          id: 'update-choice',
+          update: '{choice}',
+          updateOptions: [
+            {
+              label: 'Update Choice 1',
+              value: 'updateChoice1',
+              trigger: 'update-choice-display'
+            },
+            {
+              label: 'Update Choice 2',
+              value: 'updateChoice2',
+              trigger: 'update-choice-display'
+            }
+          ]
+        },
+        {
+          id: 'update-choice-display',
+          message: 'You chose {choice}',
           end: true
         }
       ];
@@ -1187,6 +1208,24 @@ describe('ChatBot', () => {
       it('should work properly after reloaded next option is selected', () => {
         expect(wrapper.text()).to.contain('Next Choice 1');
         expect(wrapper.text()).to.contain('You chose nextChoice1');
+      });
+
+      it('Action: reload at update options step', () => {
+        wrapper = mount(chatBot);
+      });
+
+      it('should show update options properly after reloading', () => {
+        const options = wrapper.find(OptionElementSelector);
+        // expect(options.length).to.equal(2);
+        expect(options.at(0).text()).to.equal('Update Choice 1');
+        expect(options.at(1).text()).to.equal('Update Choice 2');
+
+        options.at(0).simulate('click');
+      });
+
+      it('should work properly after reloaded next option is selected', () => {
+        expect(wrapper.text()).to.contain('Update Choice 1');
+        expect(wrapper.text()).to.contain('You chose updateChoice1');
       });
 
       it('should still be rendering', () => {
