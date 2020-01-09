@@ -433,6 +433,7 @@ class ChatBot extends Component {
 
     const { cache, cacheName } = this.props;
     if (cache) {
+      // TODO: Get rid of this setTimeout (use promises/async-await)
       setTimeout(() => {
         storage.setData(cacheName, {
           currentStep,
@@ -440,11 +441,12 @@ class ChatBot extends Component {
           previousSteps,
           renderedSteps
         });
-      }, 300);
+      }, 10);
     }
 
     const { handleNextStep } = this.props;
     if (handleNextStep) {
+      // TODO: Get rid of this setTimeout (use promises/async-await)
       setTimeout(() => {
         handleNextStep({
           currentStep,
