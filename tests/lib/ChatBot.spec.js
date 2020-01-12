@@ -1818,11 +1818,21 @@ describe('ChatBot', () => {
 
     const wrapper = mount(chatBot);
 
+    let clock;
+
+    before(() => {
+      clock = sinon.useFakeTimers();
+    });
+
+    // required as each UI update takes time
     beforeEach(done => {
-      setTimeout(() => {
-        wrapper.update();
-        done();
-      }, 150);
+      clock.tick(200);
+      wrapper.update();
+      done();
+    });
+
+    after(() => {
+      clock.restore();
     });
 
     it('Chat should render', () => {
