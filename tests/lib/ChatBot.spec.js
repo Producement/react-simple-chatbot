@@ -312,6 +312,7 @@ describe('ChatBot', () => {
     );
 
     it('should be rendered without input', () => {
+      wrapper.update();
       expect(wrapper.find(InputElementSelector)).to.have.length(0);
     });
   });
@@ -379,87 +380,92 @@ describe('ChatBot', () => {
     );
 
     it("should be rendered with input to autocomplete on 'firstname'", () => {
+      wrapper.update();
       expect(wrapper.find(InputElementSelector).props().autoComplete).to.be.equal('firstname');
     });
   });
 
   describe('Update Options', () => {
     let clock;
+    let wrapper;
 
-    before(() => {
+    before(async () => {
       clock = sinon.useFakeTimers();
+
+      wrapper = await mount(
+        <ChatBot
+          botDelay={0}
+          userDelay={0}
+          customDelay={0}
+          steps={[
+            {
+              '@class': '.TextStep',
+              id: '1',
+              message: 'Hello!',
+              trigger: '2.f745.dc70c5aaf-4010.f36e69ad1'
+            },
+            {
+              '@class': '.TextStep',
+              id: '2.f745.dc70c5aaf-4010.f36e69ad1',
+              message: 'Choose one!',
+              trigger: '{variables}'
+            },
+            {
+              '@class': '.OptionsStep',
+              id: '{variables}',
+              options: [
+                {
+                  value: { fee: 15, days: 3 },
+                  label: 'Fee: 15 & Days: 3',
+                  trigger: '5.f745.dc70c5aaf-4010.f36e69ad1'
+                },
+                {
+                  value: { fee: 30, days: 1 },
+                  label: 'Fee: 30 & Days: 1',
+                  trigger: '5.f745.dc70c5aaf-4010.f36e69ad1'
+                }
+              ]
+            },
+            {
+              '@class': '.TextStep',
+              id: '5.f745.dc70c5aaf-4010.f36e69ad1',
+              message: 'Thanks!\nFee: {variables.fee}\nDays: {variables.days}',
+              trigger: '6.0d00.f4f7fc513-6505.865edf1f5'
+            },
+            {
+              '@class': '.TextStep',
+              id: '6.0d00.f4f7fc513-6505.865edf1f5',
+              message: 'Choose again!',
+              trigger: '2bcc4b03-f23e-337c-9830-fe430d69901b'
+            },
+            {
+              '@class': '.UpdateOptionsStep',
+              id: '2bcc4b03-f23e-337c-9830-fe430d69901b',
+              update: '{variables}',
+              updateOptions: [
+                {
+                  value: { fee: 16 },
+                  label: 'Fee: 16',
+                  trigger: '8.0d00.f4f7fc513-6505.865edf1f5'
+                },
+                { value: { days: 2 }, label: 'Days: 2', trigger: '8.0d00.f4f7fc513-6505.865edf1f5' }
+              ]
+            },
+            {
+              '@class': '.TextStep',
+              id: '8.0d00.f4f7fc513-6505.865edf1f5',
+              message: 'Thanks!\nFee: {variables.fee}\nDays: {variables.days}',
+              end: true
+            }
+          ]}
+        />
+      );
     });
 
-    const wrapper = mount(
-      <ChatBot
-        botDelay={0}
-        userDelay={0}
-        customDelay={0}
-        steps={[
-          {
-            '@class': '.TextStep',
-            id: '1',
-            message: 'Hello!',
-            trigger: '2.f745.dc70c5aaf-4010.f36e69ad1'
-          },
-          {
-            '@class': '.TextStep',
-            id: '2.f745.dc70c5aaf-4010.f36e69ad1',
-            message: 'Choose one!',
-            trigger: '{variables}'
-          },
-          {
-            '@class': '.OptionsStep',
-            id: '{variables}',
-            options: [
-              {
-                value: { fee: 15, days: 3 },
-                label: 'Fee: 15 & Days: 3',
-                trigger: '5.f745.dc70c5aaf-4010.f36e69ad1'
-              },
-              {
-                value: { fee: 30, days: 1 },
-                label: 'Fee: 30 & Days: 1',
-                trigger: '5.f745.dc70c5aaf-4010.f36e69ad1'
-              }
-            ]
-          },
-          {
-            '@class': '.TextStep',
-            id: '5.f745.dc70c5aaf-4010.f36e69ad1',
-            message: 'Thanks!\nFee: {variables.fee}\nDays: {variables.days}',
-            trigger: '6.0d00.f4f7fc513-6505.865edf1f5'
-          },
-          {
-            '@class': '.TextStep',
-            id: '6.0d00.f4f7fc513-6505.865edf1f5',
-            message: 'Choose again!',
-            trigger: '2bcc4b03-f23e-337c-9830-fe430d69901b'
-          },
-          {
-            '@class': '.UpdateOptionsStep',
-            id: '2bcc4b03-f23e-337c-9830-fe430d69901b',
-            update: '{variables}',
-            updateOptions: [
-              { value: { fee: 16 }, label: 'Fee: 16', trigger: '8.0d00.f4f7fc513-6505.865edf1f5' },
-              { value: { days: 2 }, label: 'Days: 2', trigger: '8.0d00.f4f7fc513-6505.865edf1f5' }
-            ]
-          },
-          {
-            '@class': '.TextStep',
-            id: '8.0d00.f4f7fc513-6505.865edf1f5',
-            message: 'Thanks!\nFee: {variables.fee}\nDays: {variables.days}',
-            end: true
-          }
-        ]}
-      />
-    );
-
     // required as each UI update takes time
-    beforeEach(done => {
-      clock.tick(200);
+    beforeEach(async () => {
+      await clock.tickAsync(200);
       wrapper.update();
-      done();
     });
 
     after(() => {
@@ -576,10 +582,9 @@ describe('ChatBot', () => {
     });
 
     // required as each UI update takes time
-    beforeEach(done => {
-      clock.tick(200);
+    beforeEach(async () => {
+      await clock.tickAsync(200);
       wrapper.update();
-      done();
     });
 
     after(() => {
@@ -663,10 +668,9 @@ describe('ChatBot', () => {
     });
 
     // required as each UI update takes time
-    beforeEach(done => {
-      clock.tick(200);
+    beforeEach(async () => {
+      await clock.tickAsync(200);
       wrapper.update();
-      done();
     });
 
     after(() => {
@@ -757,10 +761,9 @@ describe('ChatBot', () => {
     });
 
     // required as each UI update takes time
-    beforeEach(done => {
-      clock.tick(200);
+    beforeEach(async () => {
+      await clock.tickAsync(200);
       wrapper.update();
-      done();
     });
 
     after(() => {
@@ -848,10 +851,9 @@ describe('ChatBot', () => {
     });
 
     // required as each UI update takes time
-    beforeEach(done => {
-      clock.tick(200);
+    beforeEach(async () => {
+      await clock.tickAsync(200);
       wrapper.update();
-      done();
     });
 
     after(() => {
@@ -906,10 +908,9 @@ describe('ChatBot', () => {
     });
 
     // required as each UI update takes time
-    beforeEach(done => {
-      clock.tick(200);
+    beforeEach(async () => {
+      await clock.tickAsync(200);
       wrapper.update();
-      done();
     });
 
     after(() => {
@@ -992,10 +993,9 @@ describe('ChatBot', () => {
     });
 
     // required as each UI update takes time
-    beforeEach(done => {
-      clock.tick(200);
+    beforeEach(async () => {
+      await clock.tickAsync(200);
       wrapper.update();
-      done();
     });
 
     after(() => {
@@ -1098,10 +1098,9 @@ describe('ChatBot', () => {
     });
 
     // required as each UI update takes time
-    beforeEach(done => {
-      clock.tick(200);
+    beforeEach(async () => {
+      await clock.tickAsync(200);
       wrapper.update();
-      done();
     });
 
     after(() => {
@@ -1238,10 +1237,9 @@ describe('ChatBot', () => {
       });
 
       // required as each UI update takes time
-      beforeEach(done => {
-        clock.tick(200);
+      beforeEach(async () => {
+        await clock.tickAsync(200);
         wrapper.update();
-        done();
       });
 
       after(() => {
@@ -1365,10 +1363,9 @@ describe('ChatBot', () => {
       });
 
       // required as each UI update takes time
-      beforeEach(done => {
-        clock.tick(200);
+      beforeEach(async () => {
+        await clock.tickAsync(200);
         wrapper.update();
-        done();
       });
 
       after(() => {
@@ -1504,9 +1501,9 @@ describe('ChatBot', () => {
         expect(wrapper.find(ChatBot).length).to.equal(1);
       });
 
-      it('should continue rendering on reload', () => {
+      it('should continue rendering on reload', async () => {
         wrapper.update();
-        clock.tick(100);
+        await clock.tickAsync(200);
         expect(wrapper.text()).to.contain('First message');
         expect(wrapper.text()).to.contain('Second message');
       });
@@ -1561,10 +1558,10 @@ describe('ChatBot', () => {
       expect(wrapper.find('div.rsc-controls button.my-button')).to.have.length(1);
     });
 
-    it('the extra control should be hidden', () => {
+    it('the extra control should be hidden', async () => {
       wrapper.setState({ inputValue: 'test' });
       wrapper.find('input.rsc-input').simulate('keyPress', { key: 'Enter' });
-      clock.tick(500);
+      await clock.tickAsync(500);
       expect(wrapper.find('div.rsc-controls button.my-button')).to.have.length(0);
     });
   });
@@ -1594,10 +1591,9 @@ describe('ChatBot', () => {
     });
 
     // required as each UI update takes time
-    beforeEach(done => {
-      clock.tick(200);
+    beforeEach(async () => {
+      await clock.tickAsync(200);
       wrapper.update();
-      done();
     });
 
     after(() => {
@@ -1662,10 +1658,9 @@ describe('ChatBot', () => {
     });
 
     // required as each UI update takes time
-    beforeEach(done => {
-      clock.tick(200);
+    beforeEach(async () => {
+      await clock.tickAsync(200);
       wrapper.update();
-      done();
     });
 
     after(() => {
@@ -1715,10 +1710,9 @@ describe('ChatBot', () => {
     });
 
     // required as each UI update takes time
-    beforeEach(done => {
-      clock.tick(200);
+    beforeEach(async () => {
+      await clock.tickAsync(200);
       wrapper.update();
-      done();
     });
 
     after(() => {
@@ -1755,9 +1749,8 @@ describe('ChatBot', () => {
     });
 
     // required as each UI update takes time
-    beforeEach(done => {
-      clock.tick(200);
-      done();
+    beforeEach(async () => {
+      await clock.tickAsync(200);
     });
 
     after(() => {
@@ -1766,7 +1759,7 @@ describe('ChatBot', () => {
 
     let wrapper;
 
-    it('should disable Options on read-only', () => {
+    it('should disable Options on read-only', async () => {
       wrapper = mount(
         <ChatBotWithoutDelay
           readOnly
@@ -1789,16 +1782,18 @@ describe('ChatBot', () => {
         />
       );
 
-      clock.tick(150);
+      await clock.tickAsync(150);
+      wrapper.update();
       const options = wrapper.find(OptionElementSelector);
 
       options.at(0).simulate('click');
 
-      clock.tick(150);
+      await clock.tickAsync(150);
+      wrapper.update();
       expect(wrapper.find(OptionElementSelector).length).to.equal(1);
     });
 
-    it('should disable MultipleChoices on read-only', done => {
+    it('should disable MultipleChoices on read-only', async () => {
       wrapper = mount(
         <ChatBotWithoutDelay
           readOnly
@@ -1821,16 +1816,17 @@ describe('ChatBot', () => {
         />
       );
 
-      clock.tick(150);
+      await clock.tickAsync(150);
+      wrapper.update();
       const choices = wrapper.find(MultipleChoiceElementSelector);
       const submitButton = wrapper.find(MultipleSubmitElementSelector);
 
       choices.at(0).simulate('click');
       submitButton.at(0).simulate('click');
 
-      clock.tick(200);
+      await clock.tickAsync(200);
+      wrapper.update();
       expect(wrapper.find(MultipleChoiceElementSelector).length).to.equal(1);
-      done();
     });
   });
 
