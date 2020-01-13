@@ -29,74 +29,77 @@ describe('ChatBot', () => {
   const MultipleSubmitElementSelector = 'button.rsc-mcs-submit-element';
 
   describe('Simple', () => {
-    const wrapper = mount(
-      <ChatBot
-        className="classname-test"
-        botDelay={0}
-        userDelay={0}
-        customDelay={0}
-        handleEnd={() => {}}
-        steps={[
-          {
-            id: '1',
-            message: 'Hello World',
-            trigger: 'user'
-          },
-          {
-            id: 'user',
-            user: true,
-            trigger: 'update'
-          },
-          {
-            id: 'update',
-            update: 'user',
-            trigger: () => '2'
-          },
-          {
-            id: '2',
-            component: <CustomComponent />,
-            trigger: '3'
-          },
-          {
-            id: '3',
-            component: <CustomComponent />,
-            asMessage: true,
-            trigger: '4'
-          },
-          {
-            id: '4',
-            component: <CustomComponent />,
-            replace: true,
-            trigger: '5'
-          },
-          {
-            id: '5',
-            options: [
-              { value: 'op1', label: 'Option 1', trigger: () => '6' },
-              { value: 'op2', label: 'Option 2', trigger: '6' }
-            ]
-          },
-          {
-            id: '6',
-            message: 'Bye!',
-            end: true
-          }
-        ]}
-      />
-    );
+    let wrapper;
+    let clock;
 
-    before(done => {
+    before(async () => {
+      clock = sinon.useFakeTimers();
+
+      wrapper = mount(
+        <ChatBot
+          className="classname-test"
+          botDelay={0}
+          userDelay={0}
+          customDelay={0}
+          handleEnd={() => {}}
+          steps={[
+            {
+              id: '1',
+              message: 'Hello World',
+              trigger: 'user'
+            },
+            {
+              id: 'user',
+              user: true,
+              trigger: 'update'
+            },
+            {
+              id: 'update',
+              update: 'user',
+              trigger: () => '2'
+            },
+            {
+              id: '2',
+              component: <CustomComponent />,
+              trigger: '3'
+            },
+            {
+              id: '3',
+              component: <CustomComponent />,
+              asMessage: true,
+              trigger: '4'
+            },
+            {
+              id: '4',
+              component: <CustomComponent />,
+              replace: true,
+              trigger: '5'
+            },
+            {
+              id: '5',
+              options: [
+                { value: 'op1', label: 'Option 1', trigger: () => '6' },
+                { value: 'op2', label: 'Option 2', trigger: '6' }
+              ]
+            },
+            {
+              id: '6',
+              message: 'Bye!',
+              end: true
+            }
+          ]}
+        />
+      );
+
+      await clock.runAllAsync();
       wrapper.setState({ inputValue: 'test' });
       wrapper.find(InputElementSelector).simulate('keyPress', { key: 'Enter' });
 
-      setTimeout(() => {
-        wrapper.setState({ inputValue: 'test' });
-        wrapper.find(InputElementSelector).simulate('keyPress', { key: 'Enter' });
-      }, 100);
+      await clock.runAllAsync();
+      wrapper.setState({ inputValue: 'test' });
+      wrapper.find(InputElementSelector).simulate('keyPress', { key: 'Enter' });
 
-      setTimeout(() => {
-        done();
-      }, 500);
+      await clock.runAllAsync();
     });
 
     after(() => {
