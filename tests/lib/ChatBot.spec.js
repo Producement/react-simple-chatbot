@@ -464,7 +464,7 @@ describe('ChatBot', () => {
 
     // required as each UI update takes time
     beforeEach(async () => {
-      await clock.tickAsync(200);
+      await clock.runAllAsync();
       wrapper.update();
     });
 
@@ -583,7 +583,7 @@ describe('ChatBot', () => {
 
     // required as each UI update takes time
     beforeEach(async () => {
-      await clock.tickAsync(200);
+      await clock.runAllAsync();
       wrapper.update();
     });
 
@@ -669,7 +669,7 @@ describe('ChatBot', () => {
 
     // required as each UI update takes time
     beforeEach(async () => {
-      await clock.tickAsync(200);
+      await clock.runAllAsync();
       wrapper.update();
     });
 
@@ -762,7 +762,7 @@ describe('ChatBot', () => {
 
     // required as each UI update takes time
     beforeEach(async () => {
-      await clock.tickAsync(200);
+      await clock.runAllAsync();
       wrapper.update();
     });
 
@@ -852,7 +852,7 @@ describe('ChatBot', () => {
 
     // required as each UI update takes time
     beforeEach(async () => {
-      await clock.tickAsync(200);
+      await clock.runAllAsync();
       wrapper.update();
     });
 
@@ -909,7 +909,7 @@ describe('ChatBot', () => {
 
     // required as each UI update takes time
     beforeEach(async () => {
-      await clock.tickAsync(200);
+      await clock.runAllAsync();
       wrapper.update();
     });
 
@@ -994,7 +994,7 @@ describe('ChatBot', () => {
 
     // required as each UI update takes time
     beforeEach(async () => {
-      await clock.tickAsync(200);
+      await clock.runAllAsync();
       wrapper.update();
     });
 
@@ -1099,7 +1099,7 @@ describe('ChatBot', () => {
 
     // required as each UI update takes time
     beforeEach(async () => {
-      await clock.tickAsync(200);
+      await clock.runAllAsync();
       wrapper.update();
     });
 
@@ -1238,7 +1238,7 @@ describe('ChatBot', () => {
 
       // required as each UI update takes time
       beforeEach(async () => {
-        await clock.tickAsync(200);
+        await clock.runAllAsync();
         wrapper.update();
       });
 
@@ -1364,7 +1364,7 @@ describe('ChatBot', () => {
 
       // required as each UI update takes time
       beforeEach(async () => {
-        await clock.tickAsync(200);
+        await clock.runAllAsync();
         wrapper.update();
       });
 
@@ -1503,7 +1503,7 @@ describe('ChatBot', () => {
 
       it('should continue rendering on reload', async () => {
         wrapper.update();
-        await clock.tickAsync(200);
+        await clock.runAllAsync();
         expect(wrapper.text()).to.contain('First message');
         expect(wrapper.text()).to.contain('Second message');
       });
@@ -1561,7 +1561,7 @@ describe('ChatBot', () => {
     it('the extra control should be hidden', async () => {
       wrapper.setState({ inputValue: 'test' });
       wrapper.find('input.rsc-input').simulate('keyPress', { key: 'Enter' });
-      await clock.tickAsync(500);
+      await clock.runAllAsync();
       expect(wrapper.find('div.rsc-controls button.my-button')).to.have.length(0);
     });
   });
@@ -1592,7 +1592,7 @@ describe('ChatBot', () => {
 
     // required as each UI update takes time
     beforeEach(async () => {
-      await clock.tickAsync(200);
+      await clock.runAllAsync();
       wrapper.update();
     });
 
@@ -1659,7 +1659,7 @@ describe('ChatBot', () => {
 
     // required as each UI update takes time
     beforeEach(async () => {
-      await clock.tickAsync(200);
+      await clock.runAllAsync();
       wrapper.update();
     });
 
@@ -1711,7 +1711,7 @@ describe('ChatBot', () => {
 
     // required as each UI update takes time
     beforeEach(async () => {
-      await clock.tickAsync(200);
+      await clock.runAllAsync();
       wrapper.update();
     });
 
@@ -1750,7 +1750,7 @@ describe('ChatBot', () => {
 
     // required as each UI update takes time
     beforeEach(async () => {
-      await clock.tickAsync(200);
+      await clock.runAllAsync();
     });
 
     after(() => {
@@ -1782,13 +1782,13 @@ describe('ChatBot', () => {
         />
       );
 
-      await clock.tickAsync(150);
+      await clock.runAllAsync();
       wrapper.update();
       const options = wrapper.find(OptionElementSelector);
 
       options.at(0).simulate('click');
 
-      await clock.tickAsync(150);
+      await clock.runAllAsync();
       wrapper.update();
       expect(wrapper.find(OptionElementSelector).length).to.equal(1);
     });
@@ -1816,7 +1816,7 @@ describe('ChatBot', () => {
         />
       );
 
-      await clock.tickAsync(150);
+      await clock.runAllAsync();
       wrapper.update();
       const choices = wrapper.find(MultipleChoiceElementSelector);
       const submitButton = wrapper.find(MultipleSubmitElementSelector);
@@ -1824,7 +1824,7 @@ describe('ChatBot', () => {
       choices.at(0).simulate('click');
       submitButton.at(0).simulate('click');
 
-      await clock.tickAsync(200);
+      await clock.runAllAsync();
       wrapper.update();
       expect(wrapper.find(MultipleChoiceElementSelector).length).to.equal(1);
     });
@@ -1876,13 +1876,19 @@ describe('ChatBot', () => {
     );
 
     const wrapper = mount(chatBot);
+    let clock;
 
-    // delay checking to let React update and render
-    beforeEach(done => {
-      setTimeout(() => {
-        wrapper.update();
-        done();
-      }, 150);
+    before(() => {
+      clock = sinon.useFakeTimers();
+    });
+
+    // required as each UI update takes time
+    beforeEach(async () => {
+      await clock.runAllAsync();
+    });
+
+    after(() => {
+      clock.restore();
     });
 
     it('should render', () => {
@@ -1934,8 +1940,11 @@ describe('ChatBot', () => {
     const axiosMock = new MockAdapter(axios);
 
     let wrapper;
+    let clock;
 
     before(() => {
+      clock = sinon.useFakeTimers();
+
       axiosMock.onGet(nextStepUrl).replyOnce(200, {
         id: '1',
         message: 'This is the first text',
@@ -1989,12 +1998,14 @@ describe('ChatBot', () => {
       wrapper = mount(chatBotWithApi);
     });
 
-    // delay checking to let React update and render
-    beforeEach(done => {
-      setTimeout(() => {
-        wrapper.update();
-        done();
-      }, 150);
+    // required as each UI update takes time
+    beforeEach(async () => {
+      await clock.runAllAsync();
+      wrapper.update();
+    });
+
+    after(() => {
+      clock.restore();
     });
 
     it('should render', () => {
