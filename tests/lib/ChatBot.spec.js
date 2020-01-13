@@ -5,6 +5,7 @@ import { mount } from 'enzyme';
 import { parse } from 'flatted';
 import MockAdapter from 'axios-mock-adapter';
 import axios from 'axios';
+import sinon from 'sinon';
 import ChatBot from '../../lib/ChatBot';
 import { ChatBotContainer, FloatButton, Header, HeaderIcon } from '../../lib/components';
 import { CloseIcon } from '../../lib/icons';
@@ -311,7 +312,6 @@ describe('ChatBot', () => {
     );
 
     it('should be rendered without input', () => {
-      wrapper.update();
       expect(wrapper.find(InputElementSelector)).to.have.length(0);
     });
   });
@@ -379,12 +379,17 @@ describe('ChatBot', () => {
     );
 
     it("should be rendered with input to autocomplete on 'firstname'", () => {
-      wrapper.update();
       expect(wrapper.find(InputElementSelector).props().autoComplete).to.be.equal('firstname');
     });
   });
 
   describe('Update Options', () => {
+    let clock;
+
+    before(() => {
+      clock = sinon.useFakeTimers();
+    });
+
     const wrapper = mount(
       <ChatBot
         botDelay={0}
@@ -452,9 +457,13 @@ describe('ChatBot', () => {
 
     // required as each UI update takes time
     beforeEach(done => {
-      setTimeout(() => {
-        done();
-      }, 200);
+      clock.tick(200);
+      wrapper.update();
+      done();
+    });
+
+    after(() => {
+      clock.restore();
     });
 
     it('should render', () => {
@@ -560,16 +569,21 @@ describe('ChatBot', () => {
       />
     );
 
-    before(done => {
-      setTimeout(() => {
-        done();
-      }, 500);
+    let clock;
+
+    before(() => {
+      clock = sinon.useFakeTimers();
     });
 
+    // required as each UI update takes time
     beforeEach(done => {
-      setTimeout(() => {
-        done();
-      }, 200);
+      clock.tick(200);
+      wrapper.update();
+      done();
+    });
+
+    after(() => {
+      clock.restore();
     });
 
     it('should render', () => {
@@ -642,12 +656,21 @@ describe('ChatBot', () => {
       />
     );
 
-    // delay checking to let React update and render
+    let clock;
+
+    before(() => {
+      clock = sinon.useFakeTimers();
+    });
+
+    // required as each UI update takes time
     beforeEach(done => {
-      setTimeout(() => {
-        wrapper.update();
-        done();
-      }, 200);
+      clock.tick(200);
+      wrapper.update();
+      done();
+    });
+
+    after(() => {
+      clock.restore();
     });
 
     it('should render', () => {
@@ -727,11 +750,21 @@ describe('ChatBot', () => {
       />
     );
 
-    // delay checking to let React update and render
+    let clock;
+
+    before(() => {
+      clock = sinon.useFakeTimers();
+    });
+
+    // required as each UI update takes time
     beforeEach(done => {
-      setTimeout(() => {
-        done();
-      }, 150);
+      clock.tick(200);
+      wrapper.update();
+      done();
+    });
+
+    after(() => {
+      clock.restore();
     });
 
     it('should render', () => {
@@ -808,11 +841,21 @@ describe('ChatBot', () => {
       />
     );
 
-    // delay checking to let React update and render
+    let clock;
+
+    before(() => {
+      clock = sinon.useFakeTimers();
+    });
+
+    // required as each UI update takes time
     beforeEach(done => {
-      setTimeout(() => {
-        done();
-      }, 150);
+      clock.tick(200);
+      wrapper.update();
+      done();
+    });
+
+    after(() => {
+      clock.restore();
     });
 
     it('should render', () => {
@@ -856,11 +899,21 @@ describe('ChatBot', () => {
       />
     );
 
-    // delay checking to let React update and render
+    let clock;
+
+    before(() => {
+      clock = sinon.useFakeTimers();
+    });
+
+    // required as each UI update takes time
     beforeEach(done => {
-      setTimeout(() => {
-        done();
-      }, 150);
+      clock.tick(200);
+      wrapper.update();
+      done();
+    });
+
+    after(() => {
+      clock.restore();
     });
 
     it('should render', () => {
@@ -932,11 +985,21 @@ describe('ChatBot', () => {
       />
     );
 
-    // delay checking to let React update and render
+    let clock;
+
+    before(() => {
+      clock = sinon.useFakeTimers();
+    });
+
+    // required as each UI update takes time
     beforeEach(done => {
-      setTimeout(() => {
-        done();
-      }, 150);
+      clock.tick(200);
+      wrapper.update();
+      done();
+    });
+
+    after(() => {
+      clock.restore();
     });
 
     it('should render', () => {
@@ -1028,11 +1091,21 @@ describe('ChatBot', () => {
       />
     );
 
-    // delay checking to let React update and render
+    let clock;
+
+    before(() => {
+      clock = sinon.useFakeTimers();
+    });
+
+    // required as each UI update takes time
     beforeEach(done => {
-      setTimeout(() => {
-        done();
-      }, 100);
+      clock.tick(200);
+      wrapper.update();
+      done();
+    });
+
+    after(() => {
+      clock.restore();
     });
 
     it('should render', () => {
@@ -1157,17 +1230,22 @@ describe('ChatBot', () => {
       );
 
       let wrapper;
+      let clock;
 
       before(() => {
+        clock = sinon.useFakeTimers();
         wrapper = mount(chatBot);
       });
 
-      // delay checking to let React update and render
+      // required as each UI update takes time
       beforeEach(done => {
-        setTimeout(() => {
-          wrapper.update();
-          done();
-        }, 150);
+        clock.tick(200);
+        wrapper.update();
+        done();
+      });
+
+      after(() => {
+        clock.restore();
       });
 
       it('should render', () => {
@@ -1188,6 +1266,7 @@ describe('ChatBot', () => {
       });
 
       it('should work properly after reloaded option is selected', () => {
+        wrapper.update();
         expect(wrapper.text()).to.contain('Choice 1');
         expect(wrapper.text()).to.contain('You chose choice1');
       });
@@ -1277,13 +1356,23 @@ describe('ChatBot', () => {
         />
       );
 
-      let wrapper = mount(chatBot);
+      let wrapper;
+      let clock;
 
-      // delay checking to let React update and render
+      before(() => {
+        clock = sinon.useFakeTimers();
+        wrapper = mount(chatBot);
+      });
+
+      // required as each UI update takes time
       beforeEach(done => {
-        setTimeout(() => {
-          done();
-        }, 150);
+        clock.tick(200);
+        wrapper.update();
+        done();
+      });
+
+      after(() => {
+        clock.restore();
       });
 
       it('should render', () => {
@@ -1368,8 +1457,11 @@ describe('ChatBot', () => {
       );
 
       let wrapper;
+      let clock;
 
       before(() => {
+        clock = sinon.useFakeTimers();
+
         const state = {
           currentStep: {
             '@class': '.TextStep',
@@ -1400,20 +1492,23 @@ describe('ChatBot', () => {
         };
 
         setData(cacheName, state);
+
         wrapper = mount(chatBot);
+      });
+
+      after(() => {
+        clock.restore();
       });
 
       it('should render', () => {
         expect(wrapper.find(ChatBot).length).to.equal(1);
       });
 
-      it('should continue rendering on reload', done => {
+      it('should continue rendering on reload', () => {
         wrapper.update();
-        setTimeout(() => {
-          expect(wrapper.text()).to.contain('First message');
-          expect(wrapper.text()).to.contain('Second message');
-          done();
-        }, 100);
+        clock.tick(100);
+        expect(wrapper.text()).to.contain('First message');
+        expect(wrapper.text()).to.contain('Second message');
       });
     });
   });
@@ -1452,6 +1547,16 @@ describe('ChatBot', () => {
       />
     );
 
+    let clock;
+
+    before(() => {
+      clock = sinon.useFakeTimers();
+    });
+
+    after(() => {
+      clock.restore();
+    });
+
     it('should be rendered with an extra control beside submit button', () => {
       expect(wrapper.find('div.rsc-controls button.my-button')).to.have.length(1);
     });
@@ -1459,9 +1564,8 @@ describe('ChatBot', () => {
     it('the extra control should be hidden', () => {
       wrapper.setState({ inputValue: 'test' });
       wrapper.find('input.rsc-input').simulate('keyPress', { key: 'Enter' });
-      setTimeout(() => {
-        expect(wrapper.find('div.rsc-controls button.my-button')).to.have.length(0);
-      }, 500);
+      clock.tick(500);
+      expect(wrapper.find('div.rsc-controls button.my-button')).to.have.length(0);
     });
   });
 
@@ -1483,12 +1587,21 @@ describe('ChatBot', () => {
 
     const wrapper = mount(chatBot);
 
-    // delay checking to let React update and render
+    let clock;
+
+    before(() => {
+      clock = sinon.useFakeTimers();
+    });
+
+    // required as each UI update takes time
     beforeEach(done => {
-      setTimeout(() => {
-        wrapper.update();
-        done();
-      }, 150);
+      clock.tick(200);
+      wrapper.update();
+      done();
+    });
+
+    after(() => {
+      clock.restore();
     });
 
     it('should render', () => {
@@ -1542,11 +1655,21 @@ describe('ChatBot', () => {
 
     const wrapper = mount(chatBot);
 
-    // delay checking to let React update and render
+    let clock;
+
+    before(() => {
+      clock = sinon.useFakeTimers();
+    });
+
+    // required as each UI update takes time
     beforeEach(done => {
-      setTimeout(() => {
-        done();
-      }, 150);
+      clock.tick(200);
+      wrapper.update();
+      done();
+    });
+
+    after(() => {
+      clock.restore();
     });
 
     it('should render', () => {
@@ -1585,12 +1708,21 @@ describe('ChatBot', () => {
 
     const wrapper = mount(chatBot);
 
-    // delay checking to let React update and render
+    let clock;
+
+    before(() => {
+      clock = sinon.useFakeTimers();
+    });
+
+    // required as each UI update takes time
     beforeEach(done => {
-      setTimeout(() => {
-        wrapper.update();
-        done();
-      }, 150);
+      clock.tick(200);
+      wrapper.update();
+      done();
+    });
+
+    after(() => {
+      clock.restore();
     });
 
     it('Chat should render', () => {
@@ -1616,16 +1748,25 @@ describe('ChatBot', () => {
   });
 
   describe('Read-only chat', () => {
-    let wrapper;
+    let clock;
 
-    // delay checking to let React update and render
-    beforeEach(done => {
-      setTimeout(() => {
-        done();
-      }, 150);
+    before(() => {
+      clock = sinon.useFakeTimers();
     });
 
-    it('should disable Options on read-only', done => {
+    // required as each UI update takes time
+    beforeEach(done => {
+      clock.tick(200);
+      done();
+    });
+
+    after(() => {
+      clock.restore();
+    });
+
+    let wrapper;
+
+    it('should disable Options on read-only', () => {
       wrapper = mount(
         <ChatBotWithoutDelay
           readOnly
@@ -1648,17 +1789,13 @@ describe('ChatBot', () => {
         />
       );
 
-      setTimeout(() => {
-        wrapper.update();
-        const options = wrapper.find(OptionElementSelector);
+      clock.tick(150);
+      const options = wrapper.find(OptionElementSelector);
 
-        options.at(0).simulate('click');
+      options.at(0).simulate('click');
 
-        setTimeout(() => {
-          expect(wrapper.find(OptionElementSelector).length).to.equal(1);
-          done();
-        }, 150);
-      }, 150);
+      clock.tick(150);
+      expect(wrapper.find(OptionElementSelector).length).to.equal(1);
     });
 
     it('should disable MultipleChoices on read-only', done => {
@@ -1684,19 +1821,16 @@ describe('ChatBot', () => {
         />
       );
 
-      setTimeout(() => {
-        wrapper.update();
-        const choices = wrapper.find(MultipleChoiceElementSelector);
-        const submitButton = wrapper.find(MultipleSubmitElementSelector);
+      clock.tick(150);
+      const choices = wrapper.find(MultipleChoiceElementSelector);
+      const submitButton = wrapper.find(MultipleSubmitElementSelector);
 
-        choices.at(0).simulate('click');
-        submitButton.at(0).simulate('click');
+      choices.at(0).simulate('click');
+      submitButton.at(0).simulate('click');
 
-        setTimeout(() => {
-          expect(wrapper.find(MultipleChoiceElementSelector).length).to.equal(1);
-          done();
-        }, 200);
-      }, 150);
+      clock.tick(200);
+      expect(wrapper.find(MultipleChoiceElementSelector).length).to.equal(1);
+      done();
     });
   });
 
