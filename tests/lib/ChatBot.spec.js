@@ -2135,10 +2135,9 @@ describe('ChatBot', () => {
     });
 
     // required as each UI update takes time
-    beforeEach(done => {
-      clock.tick(200);
+    beforeEach(async () => {
+      await clock.runAllAsync();
       wrapper.update();
-      done();
     });
 
     after(() => {

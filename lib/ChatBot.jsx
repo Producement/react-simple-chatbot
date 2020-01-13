@@ -451,6 +451,7 @@ class ChatBot extends Component {
   };
 
   getNextStep = async (currentStep, steps) => {
+    const { nextStepUrl } = this.props;
     const trigger = this.getTriggeredStep(currentStep.trigger, currentStep.value);
     let nextStep = steps[trigger]
       ? Object.assign({}, steps[trigger])
@@ -459,9 +460,8 @@ class ChatBot extends Component {
       nextStep.message = this.getStepMessage(nextStep.message);
     } else if (nextStep.update) {
       const updateStep = nextStep;
-      steps[updateStep.update] = steps[updateStep.update]
-        ? steps[updateStep.update]
-        : await this.getStepFromApi(updateStep.update);
+      if (nextStepUrl && !steps[updateStep.update])
+        steps[updateStep.update] = await this.getStepFromApi(updateStep.update);
       nextStep = Object.assign({}, steps[updateStep.update], { updatedBy: updateStep.id });
       nextStep.end = updateStep.end;
       nextStep.id = updateStep.update;
