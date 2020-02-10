@@ -877,10 +877,9 @@ class ChatBot extends Component {
       width,
       height,
       readOnly,
+      botAvatar,
       avatarStyle,
-      bubbleStyle,
-      hideBotAvatar,
-      hideUserAvatar
+      bubbleStyle
     } = this.props;
 
     const header = headerComponent || (
@@ -947,10 +946,8 @@ class ChatBot extends Component {
               <TextLoadingStep
                 avatarStyle={avatarStyle}
                 bubbleStyle={bubbleStyle}
-                hideBotAvatar={hideBotAvatar}
-                hideUserAvatar={hideUserAvatar}
-                avatar={currentStep.avatar}
-                user={currentStep.user}
+                avatar={botAvatar}
+                user={false}
               />
             )}
           </Content>

@@ -7,19 +7,19 @@ import Loading from '../common/Loading';
 import TextStepContainer from './TextStepContainer';
 
 function TextLoadingStep(props) {
-  const { avatarStyle, bubbleStyle, hideBotAvatar, hideUserAvatar, avatar, user } = props;
+  const { avatarStyle, bubbleStyle, avatar } = props;
 
-  const showAvatar = user ? !hideUserAvatar : !hideBotAvatar;
+  const showAvatar = true;
 
   return (
-    <TextStepContainer className={`rsc-ts ${user ? 'rsc-ts-user' : 'rsc-ts-bot'}`} user={user}>
-      <ImageContainer className="rsc-ts-image-container" user={user}>
+    <TextStepContainer className="rsc-ts rsc-ts-bot" user={false}>
+      <ImageContainer className="rsc-ts-image-container" user={false}>
         {showAvatar && (
           <Image
             className="rsc-ts-image"
             style={avatarStyle}
             showAvatar={showAvatar}
-            user={user}
+            user={false}
             src={avatar}
             alt="avatar"
           />
@@ -28,7 +28,7 @@ function TextLoadingStep(props) {
       <Bubble
         className="rsc-ts-bubble"
         style={bubbleStyle}
-        user={user}
+        user={false}
         showAvatar={showAvatar}
         isFirst
         title="..."
@@ -42,15 +42,11 @@ function TextLoadingStep(props) {
 TextLoadingStep.propTypes = {
   avatarStyle: PropTypes.objectOf(PropTypes.any).isRequired,
   bubbleStyle: PropTypes.objectOf(PropTypes.any).isRequired,
-  hideBotAvatar: PropTypes.bool.isRequired,
-  hideUserAvatar: PropTypes.bool.isRequired,
-  avatar: PropTypes.string,
-  user: PropTypes.bool
+  avatar: PropTypes.string
 };
 
 TextLoadingStep.defaultProps = {
-  avatar: undefined,
-  user: undefined
+  avatar: undefined
 };
 
 export default TextLoadingStep;
