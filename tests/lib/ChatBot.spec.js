@@ -1962,25 +1962,31 @@ describe('ChatBot', () => {
     before(() => {
       clock = sinon.useFakeTimers();
 
-      axiosMock.onGet(nextStepUrl).replyOnce(200, {
-        id: '1',
-        message: 'This is the first text',
-        trigger: '2'
-      });
+      axiosMock.onGet(nextStepUrl).replyOnce(200, [
+        {
+          id: '1',
+          message: 'This is the first text',
+          trigger: '2'
+        }
+      ]);
 
-      axiosMock.onGet(nextStepUrl).replyOnce(200, {
-        id: '2',
-        message: 'This is the last text',
-        trigger: '{options}'
-      });
+      axiosMock.onGet(nextStepUrl).replyOnce(200, [
+        {
+          id: '2',
+          message: 'This is the last text',
+          trigger: '{options}'
+        }
+      ]);
 
-      axiosMock.onGet(nextStepUrl).replyOnce(200, {
-        id: '{options}',
-        options: [
-          { label: 'Option Label 1', value: 'Option Value 1', trigger: 'update-options' },
-          { label: 'Option Label 2', value: 'Option Value 2', trigger: 'update-options' }
-        ]
-      });
+      axiosMock.onGet(nextStepUrl).replyOnce(200, [
+        {
+          id: '{options}',
+          options: [
+            { label: 'Option Label 1', value: 'Option Value 1', trigger: 'update-options' },
+            { label: 'Option Label 2', value: 'Option Value 2', trigger: 'update-options' }
+          ]
+        }
+      ]);
 
       axiosMock.onGet(nextStepUrl).replyOnce(200, {
         id: 'update-options',
@@ -1991,26 +1997,32 @@ describe('ChatBot', () => {
         ]
       });
 
-      axiosMock.onGet(nextStepUrl).replyOnce(200, {
-        id: '{input}',
-        user: true,
-        trigger: {
-          'value === "Go to update"': 'update-input',
-          'value !== "Go to update"': 'chat-end'
+      axiosMock.onGet(nextStepUrl).replyOnce(200, [
+        {
+          id: '{input}',
+          user: true,
+          trigger: {
+            'value === "Go to update"': 'update-input',
+            'value !== "Go to update"': 'chat-end'
+          }
         }
-      });
+      ]);
 
-      axiosMock.onGet(nextStepUrl).replyOnce(200, {
-        id: 'update-input',
-        update: '{input}',
-        trigger: 'chat-end'
-      });
+      axiosMock.onGet(nextStepUrl).replyOnce(200, [
+        {
+          id: 'update-input',
+          update: '{input}',
+          trigger: 'chat-end'
+        }
+      ]);
 
-      axiosMock.onGet(nextStepUrl).replyOnce(200, {
-        id: 'chat-end',
-        message: 'Chat has ended',
-        end: true
-      });
+      axiosMock.onGet(nextStepUrl).replyOnce(200, [
+        {
+          id: 'chat-end',
+          message: 'Chat has ended',
+          end: true
+        }
+      ]);
 
       wrapper = mount(chatBotWithApi);
     });

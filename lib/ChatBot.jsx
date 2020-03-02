@@ -26,7 +26,7 @@ import {
   isVariable,
   makeVariable,
   deepCopy,
-  getStepFromBackend
+  getStepsFromBackend
 } from './utils';
 import { speakFn } from './speechSynthesis';
 import MultipleChoiceStep from './steps_components/multiple_choice/MultipleChoiceStep';
@@ -74,9 +74,10 @@ class ChatBot extends Component {
     const chatSteps = {};
 
     if (nextStepUrl && steps.length === 0) {
-      const step = await this.getStepFromApi();
-      chatSteps[step.id] = step;
-      steps = [step];
+      steps = await this.getStepsFromApi();
+      for (const step in steps) {
+        chatSteps[step.id] = step;
+      }
     } else {
       for (let i = 0, len = steps.length; i < len; i += 1) {
         const step = parseStep ? parseStep(steps[i]) : steps[i];
@@ -120,7 +121,7 @@ class ChatBot extends Component {
         cache,
         firstStep,
         steps: chatSteps,
-        getStepFromApi: this.getStepFromApi,
+        getStepFromApi: this.getStepsFromApi,
         assignDefaultSetting: this.assignDefaultSetting
       },
       () => {
@@ -446,13 +447,13 @@ class ChatBot extends Component {
     const trigger = this.getTriggeredStep(currentStep.trigger, currentStep.value);
     let nextStep = steps[trigger]
       ? Object.assign({}, steps[trigger])
-      : await this.getStepFromApi(trigger);
+      : await this.getStepsFromApi(trigger);
     if (nextStep.message) {
       nextStep.message = this.getStepMessage(nextStep.message);
     } else if (nextStep.update) {
       const updateStep = nextStep;
       if (nextStepUrl && !steps[updateStep.update])
-        steps[updateStep.update] = await this.getStepFromApi(updateStep.update);
+        steps[updateStep.update] = await this.getStepsFromApi(updateStep.update);
       nextStep = Object.assign({}, steps[updateStep.update], { updatedBy: updateStep.id });
       nextStep.end = updateStep.end;
       nextStep.id = updateStep.update;
@@ -480,20 +481,24 @@ class ChatBot extends Component {
     return nextStep;
   };
 
-  getStepFromApi = async trigger => {
+  getStepsFromApi = async trigger => {
     const { nextStepUrl, parseStep } = this.props;
     this.setState({ isStepFetchingInProgress: true });
-    const step = await getStepFromBackend(nextStepUrl, trigger);
+    const backendSteps = await getStepsFromBackend(nextStepUrl, trigger);
     this.setState({ isStepFetchingInProgress: false });
-    const parsedStep = parseStep ? parseStep(step) : step;
-    const completeStep = this.assignDefaultSetting(schema.parse(parsedStep));
+
+    const { steps } = this.state;
+
+    for (const step in backendSteps) {
+      const parsedStep = parseStep ? parseStep(step) : step;
+      const completeStep = this.assignDefaultSetting(schema.parse(parsedStep));
+      steps[completeStep.id] = completeStep;
+    }
 
     // append to steps
-    const { steps } = this.state;
-    steps[completeStep.id] = completeStep;
     this.setState({ steps });
 
-    return completeStep;
+    return steps;
   };
 
   assignDefaultSetting = step => {
