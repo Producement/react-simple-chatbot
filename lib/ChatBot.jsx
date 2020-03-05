@@ -27,7 +27,8 @@ import {
   isVariable,
   makeVariable,
   deepCopy,
-  getStepFromBackend
+  getStepFromBackend,
+  sleep
 } from './utils';
 import { speakFn } from './speechSynthesis';
 import MultipleChoiceStep from './steps_components/multiple_choice/MultipleChoiceStep';
@@ -75,7 +76,20 @@ class ChatBot extends Component {
     const chatSteps = {};
 
     if (nextStepUrl && steps.length === 0) {
+      const { botDelay, customDelay } = this.props;
+
+      // TODO: Eliminate this duplicate code. Refer to getNextStep() for duplicate place
+      this.setState({ isStepFetchingInProgress: true });
+      const startTime = Date.now();
       const step = await this.getStepFromApi();
+      const timeDuration = Date.now() - startTime;
+      if (step.message) {
+        await sleep(Math.max(botDelay - timeDuration, 0));
+      } else if (step.component) {
+        await sleep(Math.max(customDelay - timeDuration, 0));
+      }
+      this.setState({ isStepFetchingInProgress: false });
+
       chatSteps[step.id] = step;
       steps = [step];
     } else {
@@ -457,11 +471,22 @@ class ChatBot extends Component {
   };
 
   getNextStep = async (currentStep, steps) => {
-    const { nextStepUrl } = this.props;
+    const { nextStepUrl, botDelay, customDelay } = this.props;
     const trigger = this.getTriggeredStep(currentStep.trigger, currentStep.value);
+
+    this.setState({ isStepFetchingInProgress: true });
+    const startTime = Date.now();
     let nextStep = steps[trigger]
       ? Object.assign({}, steps[trigger])
       : await this.getStepFromApi(trigger);
+    const timeDuration = Date.now() - startTime;
+    if (nextStep.message) {
+      await sleep(Math.max(botDelay - timeDuration, 0));
+    } else if (nextStep.component) {
+      await sleep(Math.max(customDelay - timeDuration, 0));
+    }
+    this.setState({ isStepFetchingInProgress: false });
+
     if (nextStep.message) {
       nextStep.message = this.getStepMessage(nextStep.message);
     } else if (nextStep.update) {
@@ -497,9 +522,7 @@ class ChatBot extends Component {
 
   getStepFromApi = async (stepId, value) => {
     const { nextStepUrl, parseStep } = this.props;
-    this.setState({ isStepFetchingInProgress: true });
     const step = await getStepFromBackend(nextStepUrl, stepId, value);
-    this.setState({ isStepFetchingInProgress: false });
     const parsedStep = parseStep ? parseStep(step) : step;
     const completeStep = this.assignDefaultSetting(schema.parse(parsedStep));
 
