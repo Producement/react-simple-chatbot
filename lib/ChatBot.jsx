@@ -74,10 +74,23 @@ class ChatBot extends Component {
     steps = steps || [];
     const { cache, cacheName, enableMobileAutoFocus } = this.props;
     const chatSteps = {};
-    let renderedStepsFromApi = [];
-    let currentStepFromApi;
+
+    const focusInput = () => {
+      // focus input if last step cached is a user step
+      this.setState({ disabled: false }, () => {
+        if (enableMobileAutoFocus || !isMobile()) {
+          if (this.input) {
+            this.input.focus();
+          }
+        }
+      });
+    };
 
     if (nextStepUrl && steps.length === 0) {
+      let renderedSteps = [];
+      let currentStep = null;
+      let previousStep = null;
+
       const { botDelay, customDelay } = this.props;
 
       this.setState({ isStepFetchingInProgress: true });
@@ -97,20 +110,39 @@ class ChatBot extends Component {
       }
       this.setState({ isStepFetchingInProgress: false });
 
-      // TODO: Fix after initial response is implemented.
+      // TODO: Delete after state backend is finished
       for (const step of steps) {
-        chatSteps[step.id] = step;
+        chatSteps[step.id] = this.assignDefaultSetting(schema.parse(step));
       }
 
-      if (steps.length === 1) {
-        const [step] = steps;
-        chatSteps[step.id] = this.assignDefaultSetting(schema.parse(step));
-      } else {
-        renderedStepsFromApi = this.parseRenderedSteps(
-          steps.map(step => this.assignDefaultSetting(step))
-        );
-        currentStepFromApi = renderedStepsFromApi[renderedStepsFromApi.length - 1];
+      if (steps.length === 0) {
+        throw new Error('Steps not found');
       }
+
+      renderedSteps = this.parseRenderedSteps(steps.map(step => this.assignDefaultSetting(step)));
+      const renderedNum = renderedSteps.length;
+      currentStep = renderedSteps[renderedNum - 1];
+      previousStep = renderedSteps.length > 1 ? renderedSteps[renderedNum - 2] : null;
+
+      if (currentStep.message) {
+        const { message } = currentStep;
+        currentStep.message = typeof message === 'function' ? message() : message;
+        chatSteps[currentStep.id].message = currentStep.message;
+      }
+
+      const waitingForUserInput = currentStep.user && !currentStep.value;
+
+      if (waitingForUserInput) {
+        renderedSteps.pop();
+        focusInput();
+      }
+
+      this.setState({
+        currentStep,
+        previousStep,
+        renderedSteps,
+        steps: chatSteps
+      });
     } else {
       for (let i = 0, len = steps.length; i < len; i += 1) {
         const step = parseStep ? parseStep(steps[i]) : steps[i];
@@ -120,13 +152,31 @@ class ChatBot extends Component {
         chatSteps[step.id] = this.assignDefaultSetting(schema.parse(step));
       }
       schema.checkInvalidIds(chatSteps);
-    }
 
-    const firstStep = steps[0];
-    if (firstStep.message) {
-      const { message } = firstStep;
-      firstStep.message = typeof message === 'function' ? message() : message;
-      chatSteps[firstStep.id].message = firstStep.message;
+      const firstStep = steps[0];
+      if (firstStep.message) {
+        const { message } = firstStep;
+        firstStep.message = typeof message === 'function' ? message() : message;
+        chatSteps[firstStep.id].message = firstStep.message;
+      }
+
+      const { currentStep, previousStep, renderedSteps } = await storage.getData(
+        {
+          cacheName,
+          cache,
+          firstStep,
+          steps: chatSteps,
+          assignDefaultSetting: this.assignDefaultSetting
+        },
+        focusInput
+      );
+
+      this.setState({
+        currentStep,
+        previousStep,
+        renderedSteps,
+        steps: chatSteps
+      });
     }
 
     const { recognitionEnable } = this.state;
@@ -147,33 +197,6 @@ class ChatBot extends Component {
       this.content.addEventListener('DOMNodeInserted', this.onNodeInserted);
       window.addEventListener('resize', this.onResize);
     }
-
-    const { currentStep, previousStep, renderedSteps } = await storage.getData(
-      {
-        cacheName,
-        cache,
-        firstStep,
-        steps: chatSteps,
-        assignDefaultSetting: this.assignDefaultSetting
-      },
-      () => {
-        // focus input if last step cached is a user step
-        this.setState({ disabled: false }, () => {
-          if (enableMobileAutoFocus || !isMobile()) {
-            if (this.input) {
-              this.input.focus();
-            }
-          }
-        });
-      }
-    );
-
-    this.setState({
-      currentStep: currentStepFromApi || currentStep,
-      previousStep,
-      renderedSteps: renderedStepsFromApi.length > 0 ? renderedStepsFromApi : renderedSteps,
-      steps: chatSteps
-    });
   }
 
   static getDerivedStateFromProps(props, state) {
@@ -212,8 +235,7 @@ class ChatBot extends Component {
         const completeUserStep = parseStep ? parseStep(userStep) : userStep;
         return {
           ...completeUserStep,
-          delay: 0,
-          rendered: true
+          delay: 0
         };
       }
 
@@ -473,7 +495,6 @@ class ChatBot extends Component {
       if (currentStep.replace) {
         renderedSteps.pop();
       }
-
       const nextStep = await this.getNextStep(currentStep, steps);
 
       // TODO: Remove after update logic is done.
@@ -750,13 +771,17 @@ class ChatBot extends Component {
 
   submitUserMessage = async () => {
     const { nextStepUrl } = this.props;
-    const { inputValue, renderedSteps } = this.state;
+    const { inputValue, renderedSteps, disabled } = this.state;
     const { defaultUserSettings } = this.getDefaultSettings();
     let { currentStep } = this.state;
 
     const isInvalid = currentStep.validator && this.checkInvalidInput();
 
     const parsedValue = currentStep.parser ? currentStep.parser(inputValue) : inputValue;
+
+    if (disabled) {
+      return;
+    }
 
     if (!isInvalid) {
       const step = {
@@ -784,27 +809,9 @@ class ChatBot extends Component {
 
       currentStep = Object.assign({}, defaultUserSettings, currentStep, step, this.metadata(step));
 
-      if (nextStepUrl) {
-        try {
-          const { trigger } = await this.saveStepValue(currentStep.id, currentStep.value);
-          currentStep.trigger = trigger;
-        } catch (error) {
-          // eslint-disable-next-line no-console
-          console.error(
-            `Could not get step trigger with id: ${currentStep.id} and value ${currentStep.value}`,
-            error
-          );
-        }
-      }
-
-      renderedSteps.push(currentStep);
-
       this.setState(
         {
-          currentStep,
-          renderedSteps,
-          disabled: true,
-          inputValue: ''
+          disabled: true
         },
         () => {
           if (this.input) {
@@ -812,6 +819,26 @@ class ChatBot extends Component {
           }
         }
       );
+
+      if (nextStepUrl) {
+        try {
+          const { trigger } = await this.saveStepValue(currentStep.id, currentStep.value);
+          currentStep.trigger = trigger;
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error(
+            `Could not update step with id: ${currentStep.id} and value ${currentStep.value}`,
+            error
+          );
+        }
+      }
+
+      renderedSteps.push(currentStep);
+      this.setState({
+        currentStep,
+        renderedSteps,
+        inputValue: ''
+      });
     }
   };
 
