@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { after, before, beforeEach, describe, it } from 'mocha';
+import { after, before, beforeEach, afterEach, describe, it } from 'mocha';
 import { expect } from 'chai';
 import { mount } from 'enzyme';
 import { parse } from 'flatted';
@@ -1974,82 +1974,119 @@ describe('ChatBot', () => {
       clock = sinon.useFakeTimers();
       axiosMock = new MockAdapter(axios);
 
-      axiosMock.onGet(nextStepUrl).replyOnce(200, {
-        id: '1',
-        message: 'This is the first text',
-        trigger: '2'
-      });
+      axiosMock
+        .onGet(nextStepUrl, { params: { stepId: undefined, value: undefined } })
+        .replyOnce(200, [
+          {
+            id: '1',
+            message: 'This is the first text',
+            trigger: '2'
+          }
+        ]);
 
-      axiosMock.onGet(nextStepUrl).replyOnce(200, {
-        id: '2',
-        message: 'This is the last text',
-        trigger: '{options}'
-      });
-
-      axiosMock.onGet(nextStepUrl).replyOnce(200, {
-        id: '{options}',
-        options: [
-          { label: 'Option Label 1', value: 'Option Value 1', trigger: 'update-options' },
-          { label: 'Option Label 2', value: 'Option Value 2', trigger: 'update-options' }
-        ]
-      });
-
-      axiosMock.onGet(nextStepUrl).replyOnce(200, {
-        id: '{options}',
-        value: 'Option Value 1',
-        message: 'Option Value 1',
-        trigger: 'update-options'
-      });
-
-      axiosMock.onGet(nextStepUrl).replyOnce(200, {
-        id: 'update-options',
-        update: '{options}',
-        updateOptions: [
-          { label: 'New Label 1', value: 'New Value 1', trigger: '{input}' },
-          { label: 'New Label 2', value: 'New Value 2', trigger: '{input}' }
-        ]
-      });
-
-      axiosMock.onGet(nextStepUrl).replyOnce(200, {
-        id: '{options}',
-        value: 'New Value1',
-        message: 'New Label1',
-        trigger: '{input}'
-      });
-
-      axiosMock.onGet(nextStepUrl).replyOnce(200, {
-        id: '{input}',
-        user: true,
-        trigger: {
-          'value === "Go to update"': 'update-input',
-          'value !== "Go to update"': 'chat-end'
+      axiosMock.onGet(nextStepUrl, { params: { stepId: '2', value: undefined } }).replyOnce(200, [
+        {
+          id: '2',
+          message: 'This is the second text',
+          trigger: '{options}'
         }
-      });
+      ]);
 
-      axiosMock.onGet(nextStepUrl).replyOnce(200, {
-        id: '{input}',
-        value: 'Go to update',
-        message: 'Go to update',
-        trigger: 'update-input'
-      });
+      axiosMock
+        .onGet(nextStepUrl, { params: { stepId: '{options}', value: undefined } })
+        .reply(200, [
+          {
+            id: '{options}',
+            options: [
+              { label: 'Option Label 1', value: 'Option Value 1', trigger: 'update-options' },
+              { label: 'Option Label 2', value: 'Option Value 2', trigger: 'update-options'}
+            ]
+          }
+        ]);
 
-      axiosMock.onGet(nextStepUrl).replyOnce(200, {
-        id: 'update-input',
-        update: '{input}'
-      });
+      axiosMock
+        .onGet(nextStepUrl, { params: { stepId: '{options}', value: 'Option Value 1' } })
+        .reply(200, [
+          {
+            id: '{options}',
+            value: 'Option Value 1',
+            message: 'Option Value 1',
+            trigger: 'update-options'
+          }
+        ]);
 
-      axiosMock.onGet(nextStepUrl).replyOnce(200, {
-        id: '{input}',
-        value: 'Update Input',
-        message: 'Update Input',
-        trigger: 'chat-end'
-      });
+      axiosMock
+        .onGet(nextStepUrl, { params: { stepId: 'update-options', value: undefined } })
+        .reply(200, [
+          {
+            id: '{options}',
+            updateBy: 'update-options',
+            options: [
+              { label: 'New Label 1', value: 'New Value 1', trigger: '{input}' },
+              { label: 'New Label 2', value: 'New Value 2', trigger: '{input}' }
+            ]
+          }
+        ]);
 
-      axiosMock.onGet(nextStepUrl).replyOnce(200, {
-        id: 'chat-end',
-        message: 'Chat has ended',
-        end: true
-      });
+      axiosMock
+        .onGet(nextStepUrl, { params: { stepId: '{options}', value: 'New Value 1' } })
+        .replyOnce(200, [
+          {
+            id: '{options}',
+            value: 'New Value 1',
+            message: 'New Label 1',
+            trigger: '{input}'
+          }
+        ]);
+
+      axiosMock.onGet(nextStepUrl, { params: { stepId: '{input}', value: undefined } }).reply(200, [
+        {
+          id: '{input}',
+          user: true
+        }
+      ]);
+
+      axiosMock
+        .onGet(nextStepUrl, { params: { stepId: '{input}', value: 'Go to update' } })
+        .replyOnce(200, [
+          {
+            id: '{input}',
+            value: 'Go to update',
+            message: 'Go to update',
+            trigger: 'update-input'
+          }
+        ]);
+
+      axiosMock
+        .onGet(nextStepUrl, { params: { stepId: 'update-input', value: undefined } })
+        .replyOnce(200, [
+          {
+            id: '{input}',
+            updateBy: 'update-input',
+            user: true
+          }
+        ]);
+
+      axiosMock
+        .onGet(nextStepUrl, { params: { stepId: '{input}', value: 'Update Input' } })
+        .replyOnce(200, [
+          {
+            id: '{input}',
+            value: 'Update Input',
+            message: 'Update Input',
+            trigger: 'chat-end'
+          }
+        ]);
+
+      axiosMock
+        .onGet(nextStepUrl, { params: { stepId: 'chat-end', value: undefined } })
+        .replyOnce(200, [
+          {
+            id: 'chat-end',
+            message: 'Chat has ended',
+            end: true
+          }
+        ]);
 
       wrapper = mount(chatBotWithApi);
     });
@@ -2074,7 +2111,7 @@ describe('ChatBot', () => {
     });
 
     it('should get and display the second step', () => {
-      expect(wrapper.text()).to.contain('This is the last text');
+      expect(wrapper.text()).to.contain('This is the second text');
     });
 
     it('should ask with 2 options', () => {
@@ -2206,6 +2243,215 @@ describe('ChatBot', () => {
 
     it('should show inputted value properly', () => {
       expect(wrapper.text()).to.contain('You inputted: some input');
+    });
+  });
+
+  describe('Refresh in secured chat', () => {
+    let axiosMock;
+    let clock;
+
+    beforeEach(() => {
+      clock = sinon.useFakeTimers();
+      axiosMock = new MockAdapter(axios);
+    });
+
+    afterEach(() => {
+      clock.restore();
+      axiosMock.restore();
+    });
+
+    // TODO: Make this test work
+    // it('should throw error when no steps are returned', async () => {
+    //   const nextStepUrl = 'api';
+    //   const chatBot = (
+    //     <ChatBot nextStepUrl={nextStepUrl} steps={[]} botDelay={0} customDelay={0} userDelay={0} />
+    //   );
+    //
+    //   axiosMock
+    //     .onGet(nextStepUrl, { params: { stepId: undefined, value: undefined } })
+    //     .replyOnce(200, []);
+    //
+    //   await expect(() => mount(chatBot)).to.be.rejectedWith(Error);
+    // });
+
+    it('should render properly when last step is a text step', async () => {
+      const nextStepUrl = 'api';
+      const chatBot = (
+        <ChatBot nextStepUrl={nextStepUrl} steps={[]} botDelay={0} customDelay={0} userDelay={0} />
+      );
+
+      axiosMock
+        .onGet(nextStepUrl, { params: { stepId: undefined, value: undefined } })
+        .replyOnce(200, [
+          {
+            id: '1',
+            message: 'First message',
+            trigger: '2'
+          },
+          {
+            id: '2',
+            message: 'Second message',
+            trigger: '3'
+          }
+        ]);
+
+      axiosMock.onGet(nextStepUrl, { params: { stepId: '3', value: undefined } }).replyOnce(200, [
+        {
+          id: '3',
+          message: "Third message, which wasn't rendered before",
+          end: true
+        }
+      ]);
+
+      const wrapper = mount(chatBot);
+
+      await clock.runAllAsync();
+      wrapper.update();
+
+      expect(wrapper.text()).to.contain('First message');
+      expect(wrapper.text()).to.contain('Second message');
+
+      await clock.runAllAsync();
+      wrapper.update();
+
+      expect(wrapper.text()).to.contain("Third message, which wasn't rendered before");
+
+      wrapper.unmount();
+    });
+
+    it('should render properly when last step is a option step', async () => {
+      const nextStepUrl = 'api';
+      const chatBot = (
+        <ChatBot nextStepUrl={nextStepUrl} steps={[]} botDelay={0} customDelay={0} userDelay={0} />
+      );
+
+      axiosMock
+        .onGet(nextStepUrl, { params: { stepId: undefined, value: undefined } })
+        .replyOnce(200, [
+          {
+            id: '1',
+            message: 'First Message',
+            trigger: '2'
+          },
+          {
+            id: '2',
+            options: [
+              {
+                label: 'Option 1',
+                value: 'option1'
+              },
+              {
+                label: 'Option 2',
+                value: 'option2'
+              }
+            ]
+          }
+        ]);
+
+      const wrapper = mount(chatBot);
+
+      await clock.runAllAsync();
+      wrapper.update();
+
+      expect(wrapper.text()).to.contain('First Message');
+      const options = wrapper.find(OptionElementSelector);
+      expect(options.length).to.equal(2);
+      expect(options.at(0).text()).to.equal('Option 1');
+      expect(options.at(1).text()).to.equal('Option 2');
+
+      wrapper.unmount();
+    });
+
+    it('should render properly when last step is a user step', async () => {
+      const nextStepUrl = 'api';
+      const chatBot = (
+        <ChatBot nextStepUrl={nextStepUrl} steps={[]} botDelay={0} customDelay={0} userDelay={0} />
+      );
+
+      axiosMock
+        .onGet(nextStepUrl, { params: { stepId: undefined, value: undefined } })
+        .replyOnce(200, [
+          {
+            id: '1',
+            message: 'First Message',
+            trigger: '{input}'
+          },
+          {
+            id: '{input}',
+            user: true
+          }
+        ]);
+
+      axiosMock
+        .onGet(nextStepUrl, { params: { stepId: '{input}', value: 'Some Input' } })
+        .replyOnce(200, [
+          {
+            id: '{input}',
+            user: true,
+            message: 'Some Input',
+            value: 'Some Input',
+            trigger: null
+          }
+        ]);
+
+      const wrapper = mount(chatBot);
+
+      await clock.runAllAsync();
+      wrapper.update();
+
+      expect(wrapper.text()).to.contain('First Message');
+
+      wrapper.setState({ inputValue: 'Some Input' });
+      wrapper.find(InputElementSelector).simulate('keyPress', { key: 'Enter' });
+      await clock.runAllAsync();
+      wrapper.update();
+      expect(wrapper.text()).to.contain('Some Input');
+
+      wrapper.unmount();
+    });
+
+    it('should render properly when last step is a multiple choice step', async () => {
+      const nextStepUrl = 'api';
+      const chatBot = (
+        <ChatBot nextStepUrl={nextStepUrl} steps={[]} botDelay={0} customDelay={0} userDelay={0} />
+      );
+
+      axiosMock
+        .onGet(nextStepUrl, { params: { stepId: undefined, value: undefined } })
+        .replyOnce(200, [
+          {
+            id: '1',
+            message: 'First Message',
+            trigger: '{choices}'
+          },
+          {
+            id: '{choices}',
+            choices: [
+              {
+                label: 'Choice 1',
+                value: 'choice1'
+              },
+              {
+                label: 'Choice 2',
+                value: 'choice2'
+              }
+            ]
+          }
+        ]);
+
+      const wrapper = mount(chatBot);
+
+      await clock.runAllAsync();
+      wrapper.update();
+
+      expect(wrapper.text()).to.contain('First Message');
+      const choices = wrapper.find(MultipleChoiceElementSelector);
+      expect(choices.length).to.equal(2);
+      expect(choices.at(0).text()).to.equal('Choice 1');
+      expect(choices.at(1).text()).to.equal('Choice 2');
+      expect(wrapper.find(MultipleSubmitElementSelector).length).to.equal(1);
+
+      wrapper.unmount();
     });
   });
 });

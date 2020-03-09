@@ -27,7 +27,7 @@ import {
   isVariable,
   makeVariable,
   deepCopy,
-  getStepFromBackend,
+  getStepsFromBackend,
   sleep
 } from './utils';
 import { speakFn } from './speechSynthesis';
@@ -74,24 +74,45 @@ class ChatBot extends Component {
     steps = steps || [];
     const { cache, cacheName, enableMobileAutoFocus } = this.props;
     const chatSteps = {};
+    let renderedStepsFromApi = [];
+    let currentStepFromApi;
 
     if (nextStepUrl && steps.length === 0) {
+
       const { botDelay, customDelay } = this.props;
 
-      // TODO: Eliminate this duplicate code. Refer to getNextStep() for duplicate place
       this.setState({ isStepFetchingInProgress: true });
       const startTime = Date.now();
-      const step = await this.getStepFromApi();
+
+      steps = await getStepsFromBackend(nextStepUrl, undefined, undefined);
+      if (steps.length === 0) {
+        throw new Error('Steps not found');
+      }
+      const firstStep = steps[0];
+
       const timeDuration = Date.now() - startTime;
-      if (step.message) {
+      if (firstStep.message) {
         await sleep(Math.max(botDelay - timeDuration, 0));
-      } else if (step.component) {
+      } else if (firstStep.component) {
         await sleep(Math.max(customDelay - timeDuration, 0));
       }
       this.setState({ isStepFetchingInProgress: false });
 
-      chatSteps[step.id] = step;
-      steps = [step];
+
+      // TODO: Fix after initial response is implemented.
+      for (const step of steps) {
+        chatSteps[step.id] = step;
+      }
+
+      if (steps.length === 1) {
+        const [step] = steps;
+        chatSteps[step.id] = this.assignDefaultSetting(schema.parse(step));
+      } else {
+        renderedStepsFromApi = this.parseRenderedSteps(
+          steps.map(step => this.assignDefaultSetting(step))
+        );
+        currentStepFromApi = renderedStepsFromApi[renderedStepsFromApi.length - 1];
+      }
     } else {
       for (let i = 0, len = steps.length; i < len; i += 1) {
         const step = parseStep ? parseStep(steps[i]) : steps[i];
@@ -135,7 +156,6 @@ class ChatBot extends Component {
         cache,
         firstStep,
         steps: chatSteps,
-        getStepFromApi: this.getStepFromApi,
         assignDefaultSetting: this.assignDefaultSetting
       },
       () => {
@@ -151,9 +171,9 @@ class ChatBot extends Component {
     );
 
     this.setState({
-      currentStep,
+      currentStep: currentStepFromApi || currentStep,
       previousStep,
-      renderedSteps,
+      renderedSteps: renderedStepsFromApi.length > 0 ? renderedStepsFromApi : renderedSteps,
       steps: chatSteps
     });
   }
@@ -175,6 +195,37 @@ class ChatBot extends Component {
       window.removeEventListener('resize', this.onResize);
     }
   }
+
+  parseRenderedSteps = renderedSteps => {
+    return renderedSteps.map((renderedStep, index) => {
+      const isLastRenderedSteps = index === renderedSteps.length - 1;
+      const isWaitingForUserInput = renderedStep.user && !renderedStep.value;
+
+      if (isLastRenderedSteps && !isWaitingForUserInput) {
+        return {
+          ...renderedStep,
+          delay: 0
+        };
+      }
+
+      if (isLastRenderedSteps && isWaitingForUserInput) {
+        const { parseStep } = this.props;
+        const userStep = renderedStep;
+        const completeUserStep = parseStep ? parseStep(userStep) : userStep;
+        return {
+          ...completeUserStep,
+          delay: 0,
+          rendered: true
+        };
+      }
+
+      return {
+        ...renderedStep,
+        delay: 0,
+        rendered: true
+      };
+    });
+  };
 
   getDefaultSettings = () => {
     const { botDelay, botAvatar, userDelay, userAvatar, customDelay } = this.props;
@@ -232,8 +283,9 @@ class ChatBot extends Component {
       throw new Error('Value is required parameter');
     }
 
-    const fullStep = await this.getStepFromApi(stepId, value);
-    return fullStep;
+    const resultSteps = await this.getStepsFromApi(stepId, value);
+
+    return resultSteps[0];
   };
 
   getTriggeredStep = (trigger, value) => {
@@ -357,7 +409,8 @@ class ChatBot extends Component {
 
     if (currentStep.options && data) {
       const option = Object.assign({}, currentStep.options.filter(o => deepEqual(o, data))[0]);
-      const trigger = this.getTriggeredStep(option.trigger, currentStep.value);
+      const trigger =
+        currentStep.trigger || this.getTriggeredStep(option.trigger, currentStep.value);
       delete currentStep.options;
 
       // Find the last state and append it to the new one
@@ -425,10 +478,13 @@ class ChatBot extends Component {
 
       const nextStep = await this.getNextStep(currentStep, steps);
 
+      // TODO: Remove after update logic is done.
+      if (nextStepUrl) steps[nextStep.id] = nextStep;
+
       previousStep = currentStep;
       currentStep = nextStep;
 
-      this.setState({ renderedSteps, currentStep, previousStep }, () => {
+      this.setState({ renderedSteps, currentStep, previousStep, steps }, () => {
         if (nextStep.user) {
           this.setState({ disabled: false }, () => {
             if (enableMobileAutoFocus || !isMobile()) {
@@ -476,9 +532,56 @@ class ChatBot extends Component {
 
     this.setState({ isStepFetchingInProgress: true });
     const startTime = Date.now();
-    let nextStep = steps[trigger]
-      ? Object.assign({}, steps[trigger])
-      : await this.getStepFromApi(trigger);
+
+    let nextStep;
+
+    if (!nextStepUrl) {
+      nextStep = Object.assign({}, steps[trigger]);
+
+      if (nextStep.message) {
+        nextStep.message = this.getStepMessage(nextStep.message);
+      } else if (nextStep.update) {
+        const updateStep = nextStep;
+        nextStep = Object.assign({}, steps[updateStep.update], { updatedBy: updateStep.id });
+        nextStep.end = updateStep.end;
+        nextStep.id = updateStep.update;
+        if (nextStep.options || updateStep.updateOptions) {
+          if (updateStep.updateOptions) {
+            nextStep.options = updateStep.updateOptions;
+          } else {
+            for (let i = 0, len = nextStep.options.length; i < len; i += 1) {
+              nextStep.options[i].trigger = updateStep.trigger;
+            }
+          }
+          nextStep.user = false;
+        } else {
+          if (updateStep.updateUser) nextStep.user = updateStep.updateUser;
+          if (updateStep.validator) nextStep.validator = updateStep.validator;
+          if (updateStep.parser) nextStep.parser = updateStep.parser;
+          nextStep.trigger = updateStep.trigger;
+        }
+      }
+
+      if (typeof nextStep.evalExpression === 'string') {
+        this.evaluateExpression(nextStep.evalExpression);
+      }
+    } else {
+      const nextSteps = await this.getStepsFromApi(trigger);
+      const lastIndex = nextSteps.length - 1;
+      const { renderedSteps } = this.state;
+
+      for (let i = 0; i < lastIndex; i += 1) {
+        nextSteps[i]['@class'] = '.ValueStep';
+        renderedSteps.push(nextSteps[i]);
+      }
+
+      nextStep = nextSteps[lastIndex];
+
+      if (nextStep.message) {
+        nextStep.message = this.getStepMessage(nextStep.message);
+      }
+    }
+
     const timeDuration = Date.now() - startTime;
     if (nextStep.message) {
       await sleep(Math.max(botDelay - timeDuration, 0));
@@ -487,51 +590,24 @@ class ChatBot extends Component {
     }
     this.setState({ isStepFetchingInProgress: false });
 
-    if (nextStep.message) {
-      nextStep.message = this.getStepMessage(nextStep.message);
-    } else if (nextStep.update) {
-      const updateStep = nextStep;
-      if (nextStepUrl && !steps[updateStep.update])
-        steps[updateStep.update] = await this.getStepFromApi(updateStep.update);
-      nextStep = Object.assign({}, steps[updateStep.update], { updatedBy: updateStep.id });
-      nextStep.end = updateStep.end;
-      nextStep.id = updateStep.update;
-      if (nextStep.options || updateStep.updateOptions) {
-        if (updateStep.updateOptions) {
-          nextStep.options = updateStep.updateOptions;
-        } else {
-          for (let i = 0, len = nextStep.options.length; i < len; i += 1) {
-            nextStep.options[i].trigger = updateStep.trigger;
-          }
-        }
-        nextStep.user = false;
-      } else {
-        if (updateStep.updateUser) nextStep.user = updateStep.updateUser;
-        if (updateStep.validator) nextStep.validator = updateStep.validator;
-        if (updateStep.parser) nextStep.parser = updateStep.parser;
-        nextStep.trigger = updateStep.trigger;
-      }
-    }
-
-    if (!nextStepUrl && typeof nextStep.evalExpression === 'string') {
-      this.evaluateExpression(nextStep.evalExpression);
-    }
-
     return nextStep;
   };
 
-  getStepFromApi = async (stepId, value) => {
+  getStepsFromApi = async (stepId, value) => {
     const { nextStepUrl, parseStep } = this.props;
-    const step = await getStepFromBackend(nextStepUrl, stepId, value);
-    const parsedStep = parseStep ? parseStep(step) : step;
-    const completeStep = this.assignDefaultSetting(schema.parse(parsedStep));
+    const newSteps = await getStepsFromBackend(nextStepUrl, stepId, value);
 
-    // append to steps
-    const { steps } = this.state;
-    steps[completeStep.id] = completeStep;
-    this.setState({ steps });
+    const completeSteps = [];
 
-    return completeStep;
+    for (const step of newSteps) {
+      // TODO: Fix this, because not every steps require parsing
+      const parsedStep = parseStep ? parseStep(step) : step;
+      const completeStep = this.assignDefaultSetting(schema.parse(parsedStep));
+
+      completeSteps.push(completeStep);
+    }
+
+    return completeSteps;
   };
 
   assignDefaultSetting = step => {
@@ -710,10 +786,17 @@ class ChatBot extends Component {
 
       currentStep = Object.assign({}, defaultUserSettings, currentStep, step, this.metadata(step));
 
-      // Should we wait for response here?
       if (nextStepUrl) {
-        const { trigger } = await this.getStepFromApi(currentStep.id, currentStep.value);
-        currentStep.trigger = trigger;
+        try {
+          const { trigger } = await this.saveStepValue(currentStep.id, currentStep.value);
+          currentStep.trigger = trigger;
+        } catch (error) {
+          // eslint-disable-next-line no-console
+          console.error(
+            `Could not get step trigger with id: ${currentStep.id} and value ${currentStep.value}`,
+            error
+          );
+        }
       }
 
       renderedSteps.push(currentStep);
