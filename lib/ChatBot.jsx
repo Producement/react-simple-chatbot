@@ -78,7 +78,6 @@ class ChatBot extends Component {
     let currentStepFromApi;
 
     if (nextStepUrl && steps.length === 0) {
-
       const { botDelay, customDelay } = this.props;
 
       this.setState({ isStepFetchingInProgress: true });
@@ -97,7 +96,6 @@ class ChatBot extends Component {
         await sleep(Math.max(customDelay - timeDuration, 0));
       }
       this.setState({ isStepFetchingInProgress: false });
-
 
       // TODO: Fix after initial response is implemented.
       for (const step of steps) {
