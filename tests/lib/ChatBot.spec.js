@@ -1966,7 +1966,7 @@ describe('ChatBot', () => {
         ]);
 
       axiosMock
-        .onGet(nextStepUrl, { params: { stepId: '{options}', value: 'Option Value 1' } })
+        .onGet(nextStepUrl, { params: { stepId: '{options}', value: '"Option Value 1"' } })
         .reply(200, [
           {
             id: '{options}',
@@ -1990,7 +1990,7 @@ describe('ChatBot', () => {
         ]);
 
       axiosMock
-        .onGet(nextStepUrl, { params: { stepId: '{options}', value: 'New Value 1' } })
+        .onGet(nextStepUrl, { params: { stepId: '{options}', value: '"New Value 1"' } })
         .replyOnce(200, [
           {
             id: '{options}',
@@ -2008,7 +2008,7 @@ describe('ChatBot', () => {
       ]);
 
       axiosMock
-        .onGet(nextStepUrl, { params: { stepId: '{input}', value: 'Go to update' } })
+        .onGet(nextStepUrl, { params: { stepId: '{input}', value: '"Go to update"' } })
         .replyOnce(200, [
           {
             id: '{input}',
@@ -2029,7 +2029,7 @@ describe('ChatBot', () => {
         ]);
 
       axiosMock
-        .onGet(nextStepUrl, { params: { stepId: '{input}', value: 'Update Input' } })
+        .onGet(nextStepUrl, { params: { stepId: '{input}', value: '"Update Input"' } })
         .replyOnce(200, [
           {
             id: '{input}',
@@ -2232,7 +2232,18 @@ describe('ChatBot', () => {
     //     .onGet(nextStepUrl, { params: { stepId: undefined, value: undefined } })
     //     .replyOnce(200, []);
     //
-    //   await expect(() => mount(chatBot)).to.be.rejectedWith(Error);
+    //   let throwsError = false;
+    //
+    //   try {
+    //     const wrapper = await mount(chatBot);
+    //     await clock.runAllAsync();
+    //     wrapper.update();
+    //   } catch (error) {
+    //     throwsError = true;
+    //     expect(error.message).to.equal('Steps not found');
+    //   }
+    //
+    //   expect(throwsError).to.equal(true);
     // });
 
     it('should render properly when last step is a text step', async () => {
@@ -2344,7 +2355,7 @@ describe('ChatBot', () => {
         ]);
 
       axiosMock
-        .onGet(nextStepUrl, { params: { stepId: '{input}', value: 'Some Input' } })
+        .onGet(nextStepUrl, { params: { stepId: '{input}', value: '"Some Input"' } })
         .replyOnce(200, [
           {
             id: '{input}',
