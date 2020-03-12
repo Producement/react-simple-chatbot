@@ -406,7 +406,7 @@ class ChatBot extends Component {
 
     const value = getValueFromData();
 
-    if (value) {
+    if (!nextStepUrl && value) {
       if (isNestedVariable(currentStep.id)) {
         this.saveValueAsStep(value, currentStep.id, renderedSteps);
       } else {
