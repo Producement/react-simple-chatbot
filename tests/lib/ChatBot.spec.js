@@ -2000,12 +2000,14 @@ describe('ChatBot', () => {
           }
         ]);
 
-      axiosMock.onGet(nextStepUrl, { params: { stepId: '{input}', value: undefined } }).reply(200, [
-        {
-          id: '{input}',
-          user: true
-        }
-      ]);
+      axiosMock
+        .onGet(nextStepUrl, { params: { stepId: '{input}', value: undefined } })
+        .replyOnce(200, [
+          {
+            id: '{input}',
+            user: true
+          }
+        ]);
 
       axiosMock
         .onGet(nextStepUrl, { params: { stepId: '{input}', value: '"Go to update"' } })
@@ -2099,7 +2101,7 @@ describe('ChatBot', () => {
       options.at(0).simulate('click');
     });
 
-    it('Action: give input twice', () => {
+    it('Action: give input', () => {
       wrapper.setState({ inputValue: 'Go to update' });
       wrapper.find(InputElementSelector).simulate('keyPress', { key: 'Enter' });
     });
@@ -2221,30 +2223,21 @@ describe('ChatBot', () => {
       axiosMock.restore();
     });
 
-    // TODO: Make this test work
-    // it('should throw error when no steps are returned', async () => {
-    //   const nextStepUrl = 'api';
-    //   const chatBot = (
-    //     <ChatBot nextStepUrl={nextStepUrl} steps={[]} botDelay={0} customDelay={0} userDelay={0} />
-    //   );
-    //
-    //   axiosMock
-    //     .onGet(nextStepUrl, { params: { stepId: undefined, value: undefined } })
-    //     .replyOnce(200, []);
-    //
-    //   let throwsError = false;
-    //
-    //   try {
-    //     const wrapper = await mount(chatBot);
-    //     await clock.runAllAsync();
-    //     wrapper.update();
-    //   } catch (error) {
-    //     throwsError = true;
-    //     expect(error.message).to.equal('Steps not found');
-    //   }
-    //
-    //   expect(throwsError).to.equal(true);
-    // });
+    it('should throw error when no steps are returned', async () => {
+      const nextStepUrl = 'api';
+
+      const chatBot = (
+        <ChatBot nextStepUrl={nextStepUrl} steps={[]} botDelay={0} customDelay={0} userDelay={0} />
+      );
+      axiosMock
+        .onGet(nextStepUrl, { params: { stepId: undefined, value: undefined } })
+        .replyOnce(200, []);
+
+      const wrapper = mount(chatBot);
+      await clock.runAllAsync();
+      // eslint-disable-next-line no-unused-expressions
+      expect(wrapper.instance().state.error).to.be.true;
+    });
 
     it('should render properly when last step is a text step', async () => {
       const nextStepUrl = 'api';

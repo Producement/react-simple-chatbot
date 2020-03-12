@@ -95,8 +95,7 @@
     "prettier": "^1.16.4",
     "prop-types": "^15.6.0",
     "react": "^16.4.1",
-    "react-dom": "^16.4.1",
-    "qs": "latest"
+    "react-dom": "^16.4.1"
   },
   "peerDependencies": {
     "react": "^16.3.0",

@@ -56,6 +56,7 @@ class ChatBot extends Component {
       currentStep: {},
       previousStep: {},
       steps: {},
+      error: false,
       disabled: true,
       opened: props.opened || !props.floating,
       inputValue: '',
@@ -98,7 +99,9 @@ class ChatBot extends Component {
 
       steps = await getStepsFromBackend(nextStepUrl, undefined, undefined);
       if (steps.length === 0) {
-        throw new Error('Steps not found');
+        this.setState({ error: true });
+        console.error('Error: Could not find any steps');
+        return;
       }
       const firstStep = steps[0];
 
@@ -982,6 +985,11 @@ class ChatBot extends Component {
   };
 
   render() {
+    const { error } = this.state;
+    if (error) {
+      return <h1> Component is not working because of unexpected error. </h1>;
+    }
+
     const {
       currentStep,
       disabled,
