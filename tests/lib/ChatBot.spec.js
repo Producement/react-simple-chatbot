@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
-import { after, before, beforeEach, describe, it } from 'mocha';
+import { after, before, beforeEach, afterEach, describe, it } from 'mocha';
 import { expect } from 'chai';
 import { mount } from 'enzyme';
 import { parse } from 'flatted';
 import MockAdapter from 'axios-mock-adapter';
 import axios from 'axios';
 import sinon from 'sinon';
+import ErrorBoundary from 'react-error-boundary';
 import ChatBot from '../../lib/ChatBot';
 import { ChatBotContainer, FloatButton, Header, HeaderIcon } from '../../lib/components';
 import { CloseIcon } from '../../lib/icons';
@@ -402,19 +403,16 @@ describe('ChatBot', () => {
           customDelay={0}
           steps={[
             {
-              '@class': '.TextStep',
               id: '1',
               message: 'Hello!',
               trigger: '2.f745.dc70c5aaf-4010.f36e69ad1'
             },
             {
-              '@class': '.TextStep',
               id: '2.f745.dc70c5aaf-4010.f36e69ad1',
               message: 'Choose one!',
               trigger: '{variables}'
             },
             {
-              '@class': '.OptionsStep',
               id: '{variables}',
               options: [
                 {
@@ -430,19 +428,16 @@ describe('ChatBot', () => {
               ]
             },
             {
-              '@class': '.TextStep',
               id: '5.f745.dc70c5aaf-4010.f36e69ad1',
               message: 'Thanks!\nFee: {variables.fee}\nDays: {variables.days}',
               trigger: '6.0d00.f4f7fc513-6505.865edf1f5'
             },
             {
-              '@class': '.TextStep',
               id: '6.0d00.f4f7fc513-6505.865edf1f5',
               message: 'Choose again!',
               trigger: '2bcc4b03-f23e-337c-9830-fe430d69901b'
             },
             {
-              '@class': '.UpdateOptionsStep',
               id: '2bcc4b03-f23e-337c-9830-fe430d69901b',
               update: '{variables}',
               updateOptions: [
@@ -455,7 +450,6 @@ describe('ChatBot', () => {
               ]
             },
             {
-              '@class': '.TextStep',
               id: '8.0d00.f4f7fc513-6505.865edf1f5',
               message: 'Thanks!\nFee: {variables.fee}\nDays: {variables.days}',
               end: true
@@ -520,19 +514,16 @@ describe('ChatBot', () => {
         customDelay={0}
         steps={[
           {
-            '@class': '.TextStep',
             id: '1',
             message: 'Hello!',
             trigger: '2.f745.dc70c5aaf-4010.f36e69ad1'
           },
           {
-            '@class': '.TextStep',
             id: '2.f745.dc70c5aaf-4010.f36e69ad1',
             message: 'Choose one!',
             trigger: '{variables}'
           },
           {
-            '@class': '.OptionsStep',
             id: '{variables}',
             options: [
               {
@@ -548,19 +539,16 @@ describe('ChatBot', () => {
             ]
           },
           {
-            '@class': '.TextStep',
             id: '5.f745.dc70c5aaf-4010.f36e69ad1',
             message: 'Thanks!\nFee: {variables.fee}\nDays: {variables.days}',
             trigger: '6.0d00.f4f7fc513-6505.865edf1f5'
           },
           {
-            '@class': '.TextStep',
             id: '6.0d00.f4f7fc513-6505.865edf1f5',
             message: 'Choose again!',
             trigger: '2bcc4b03-f23e-337c-9830-fe430d69901b'
           },
           {
-            '@class': '.UpdateOptionsStep',
             id: '2bcc4b03-f23e-337c-9830-fe430d69901b',
             update: '{variables}',
             updateOptions: [
@@ -569,7 +557,6 @@ describe('ChatBot', () => {
             ]
           },
           {
-            '@class': '.TextStep',
             id: '8.0d00.f4f7fc513-6505.865edf1f5',
             message: 'Thanks!\nFee: {variables.fee}\nDays: {variables.days}',
             end: true
@@ -639,7 +626,6 @@ describe('ChatBot', () => {
         customDelay={0}
         steps={[
           {
-            '@class': '.OptionsStep',
             id: '{variables}',
             options: [
               {
@@ -655,7 +641,6 @@ describe('ChatBot', () => {
             ]
           },
           {
-            '@class': '.TextStep',
             id: 'last',
             message: 'Thanks! {variables}',
             end: true
@@ -704,7 +689,6 @@ describe('ChatBot', () => {
         customDelay={0}
         steps={[
           {
-            '@class': '.OptionsStep',
             id: '{variables}',
             options: [
               {
@@ -720,19 +704,16 @@ describe('ChatBot', () => {
             ]
           },
           {
-            '@class': '.UserStep',
             id: '{variables.property}',
             user: true,
             trigger: 'display'
           },
           {
-            '@class': '.TextStep',
             id: 'display',
             message: 'Thanks! {variables}',
             trigger: '{variables.property2}'
           },
           {
-            '@class': '.OptionsStep',
             id: '{variables.property2}',
             options: [
               {
@@ -748,7 +729,6 @@ describe('ChatBot', () => {
             ]
           },
           {
-            '@class': '.TextStep',
             id: 'last',
             message: 'Updated! {variables}',
             end: true
@@ -822,7 +802,6 @@ describe('ChatBot', () => {
         customDelay={0}
         steps={[
           {
-            '@class': '.OptionsStep',
             id: '{variables}',
             options: [
               {
@@ -838,7 +817,6 @@ describe('ChatBot', () => {
             ]
           },
           {
-            '@class': '.TextStep',
             id: 'last',
             message: 'Property1: {variables.property1}, Property3: {variables.property2.property3}',
             end: true
@@ -947,39 +925,33 @@ describe('ChatBot', () => {
         customDelay={0}
         steps={[
           {
-            '@class': '.TextStep',
             id: '1',
             message: 'Enter your salary!',
             trigger: '{salary}'
           },
           {
-            '@class': '.UserStep',
             id: '{salary}',
             user: true,
             trigger: 'display'
           },
           {
-            '@class': '.TextStep',
             id: 'display',
             evalExpression: 'values["{salary}"] = "$" + previousValues["{salary}"]',
             message: 'Your salary is {salary}',
             trigger: 'assign-variable-without-optionstep'
           },
           {
-            '@class': '.TextStep',
             id: 'assign-variable-without-optionstep',
             evalExpression: 'values["{variable}"] = "value"',
             message: 'Assigning value to variable',
             trigger: 'display-variable'
           },
           {
-            '@class': '.TextStep',
             id: 'display-variable',
             message: 'The variable is {variable}',
             trigger: 'check-evalExpression-precedence'
           },
           {
-            '@class': '.TextStep',
             id: 'check-evalExpression-precedence',
             evalExpression: 'values["{person}"] = { name: "FirstName LastName", age: 34 }',
             message: 'Your name is {person.name} and you are {person.age} years old',
@@ -1039,13 +1011,11 @@ describe('ChatBot', () => {
         customDelay={0}
         steps={[
           {
-            '@class': '.TextStep',
             id: '1',
             message: 'Which fruits would you like?!',
             trigger: '{choices}'
           },
           {
-            '@class': '.ChoiceStep',
             id: '{choices}',
             choices: [
               {
@@ -1084,13 +1054,11 @@ describe('ChatBot', () => {
             trigger: 'EndMessage'
           },
           {
-            '@class': '.TextStep',
             id: 'AppleAndOrange',
             message: 'Apple and Orange chosen',
             trigger: 'EndMessage'
           },
           {
-            '@class': '.TextStep',
             id: 'EndMessage',
             message: 'First choice: {choices}',
             end: true
@@ -1455,13 +1423,11 @@ describe('ChatBot', () => {
 
       const steps = [
         {
-          '@class': '.TextStep',
           id: '1',
           message: 'First message',
           trigger: '2'
         },
         {
-          '@class': '.TextStep',
           id: '2',
           message: 'Second message',
           end: true
@@ -1478,7 +1444,6 @@ describe('ChatBot', () => {
 
         const state = {
           currentStep: {
-            '@class': '.TextStep',
             id: '1',
             key: 'GnVGFdK84RGxhy1m6uvQWxAr',
             message: 'First message',
@@ -1487,7 +1452,6 @@ describe('ChatBot', () => {
           previousStep: {},
           previousSteps: [
             {
-              '@class': '.TextStep',
               id: '1',
               key: 'GnVGFdK84RGxhy1m6uvQWxAr',
               message: 'First message',
@@ -1496,7 +1460,6 @@ describe('ChatBot', () => {
           ],
           renderedSteps: [
             {
-              '@class': '.TextStep',
               id: '1',
               key: 'GnVGFdK84RGxhy1m6uvQWxAr',
               message: 'First message',
@@ -1590,14 +1553,14 @@ describe('ChatBot', () => {
         options: [
           {
             label: 'Option Label',
-            value: ''
+            value: 'optionValue'
           }
         ],
         end: true
       }
     ];
 
-    const chatBot = <ChatBotWithoutDelay steps={steps} />;
+    const chatBot = <ChatBot botDelay={0} userDelay={0} customDelay={0} steps={steps} />;
 
     const wrapper = mount(chatBot);
 
@@ -1634,6 +1597,16 @@ describe('ChatBot', () => {
       const replacer = wrapper.find(TextStep);
       expect(replacer.length).to.equal(1);
       expect(replacer.text()).to.equal('Option Label');
+    });
+
+    it('should have a text step in rendered steps', () => {
+      const renderedSteps = wrapper.find(ChatBot).state('renderedSteps');
+      const lastStep = renderedSteps[renderedSteps.length - 1];
+
+      expect(lastStep.message).to.equal('Option Label');
+      expect(lastStep.value).to.equal('optionValue');
+      // eslint-disable-next-line no-unused-expressions
+      expect(lastStep.label).to.be.undefined;
     });
 
     it('should still be rendering', () => {
@@ -1954,63 +1927,131 @@ describe('ChatBot', () => {
         parseStep={parseStep}
       />
     );
-    const axiosMock = new MockAdapter(axios);
+    let axiosMock;
 
     let wrapper;
     let clock;
 
     before(() => {
       clock = sinon.useFakeTimers();
+      axiosMock = new MockAdapter(axios);
 
-      axiosMock.onGet(nextStepUrl).replyOnce(200, {
-        id: '1',
-        message: 'This is the first text',
-        trigger: '2'
-      });
+      axiosMock
+        .onGet(nextStepUrl, { params: { stepId: undefined, value: undefined, readOnly : false } })
+        .replyOnce(200, [
+          {
+            id: '1',
+            message: 'This is the first text',
+            trigger: '2'
+          }
+        ]);
 
-      axiosMock.onGet(nextStepUrl).replyOnce(200, {
-        id: '2',
-        message: 'This is the last text',
-        trigger: '{options}'
-      });
-
-      axiosMock.onGet(nextStepUrl).replyOnce(200, {
-        id: '{options}',
-        options: [
-          { label: 'Option Label 1', value: 'Option Value 1', trigger: 'update-options' },
-          { label: 'Option Label 2', value: 'Option Value 2', trigger: 'update-options' }
-        ]
-      });
-
-      axiosMock.onGet(nextStepUrl).replyOnce(200, {
-        id: 'update-options',
-        update: '{options}',
-        updateOptions: [
-          { label: 'New Label 1', value: 'New Value 1', trigger: '{input}' },
-          { label: 'New Label 2', value: 'New Value 2', trigger: '{input}' }
-        ]
-      });
-
-      axiosMock.onGet(nextStepUrl).replyOnce(200, {
-        id: '{input}',
-        user: true,
-        trigger: {
-          'value === "Go to update"': 'update-input',
-          'value !== "Go to update"': 'chat-end'
+      axiosMock.onGet(nextStepUrl, { params: { stepId: '2', value: undefined, readOnly : false  } })
+        .replyOnce(200, [
+        {
+          id: '2',
+          message: 'This is the second text',
+          trigger: '{options}'
         }
-      });
+      ]);
 
-      axiosMock.onGet(nextStepUrl).replyOnce(200, {
-        id: 'update-input',
-        update: '{input}',
-        trigger: 'chat-end'
-      });
+      axiosMock
+        .onGet(nextStepUrl, { params: { stepId: '{options}', value: undefined, readOnly : false  } })
+        .reply(200, [
+          {
+            id: '{options}',
+            options: [
+              { label: 'Option Label 1', value: 'Option Value 1', trigger: 'update-options' },
+              { label: 'Option Label 2', value: 'Option Value 2', trigger: 'update-options' }
+            ]
+          }
+        ]);
 
-      axiosMock.onGet(nextStepUrl).replyOnce(200, {
-        id: 'chat-end',
-        message: 'Chat has ended',
-        end: true
-      });
+      axiosMock
+        .onGet(nextStepUrl, { params: { stepId: '{options}', value: '"Option Value 1"', readOnly : false  } })
+        .reply(200, [
+          {
+            id: '{options}',
+            value: 'Option Value 1',
+            message: 'Option Value 1',
+            trigger: 'update-options'
+          }
+        ]);
+
+      axiosMock
+        .onGet(nextStepUrl, { params: { stepId: 'update-options', value: undefined, readOnly : false  } })
+        .reply(200, [
+          {
+            id: '{options}',
+            updatedBy: 'update-options',
+            options: [
+              { label: 'New Label 1', value: 'New Value 1', trigger: '{input}' },
+              { label: 'New Label 2', value: 'New Value 2', trigger: '{input}' }
+            ]
+          }
+        ]);
+
+      axiosMock
+        .onGet(nextStepUrl, { params: { stepId: '{options}', value: '"New Value 1"', readOnly : false  } })
+        .replyOnce(200, [
+          {
+            id: '{options}',
+            value: 'New Value 1',
+            message: 'New Label 1',
+            trigger: '{input}'
+          }
+        ]);
+
+      axiosMock
+        .onGet(nextStepUrl, { params: { stepId: '{input}', value: undefined, readOnly : false  } })
+        .replyOnce(200, [
+          {
+            id: '{input}',
+            user: true
+          }
+        ]);
+
+      axiosMock
+        .onGet(nextStepUrl, { params: { stepId: '{input}', value: '"Go to update"', readOnly : false  } })
+        .replyOnce(200, [
+          {
+            id: '{input}',
+            value: 'Go to update',
+            message: 'Go to update',
+            trigger: 'update-input'
+          }
+        ]);
+
+      axiosMock
+        .onGet(nextStepUrl, { params: { stepId: 'update-input', value: undefined, readOnly : false  } })
+        .replyOnce(200, [
+          {
+            id: '{input}',
+            updatedBy: 'update-input',
+            user: true
+          }
+        ]);
+
+      axiosMock
+        .onGet(nextStepUrl, { params: { stepId: '{input}', value: '"Update Input"', readOnly : false  } })
+        .replyOnce(200, [
+          {
+            id: '{input}',
+            value: 'Update Input',
+            message: 'Update Input',
+            trigger: 'chat-end'
+          }
+        ]);
+
+      axiosMock
+        .onGet(nextStepUrl, { params: { stepId: 'chat-end', value: undefined, readOnly : false  } })
+        .replyOnce(200, [
+          {
+            id: 'chat-end',
+            message: 'Chat has ended',
+            end: true
+          }
+        ]);
 
       wrapper = mount(chatBotWithApi);
     });
@@ -2023,6 +2064,7 @@ describe('ChatBot', () => {
 
     after(() => {
       clock.restore();
+      axiosMock.restore();
     });
 
     it('should render', () => {
@@ -2034,7 +2076,7 @@ describe('ChatBot', () => {
     });
 
     it('should get and display the second step', () => {
-      expect(wrapper.text()).to.contain('This is the last text');
+      expect(wrapper.text()).to.contain('This is the second text');
     });
 
     it('should ask with 2 options', () => {
@@ -2166,6 +2208,287 @@ describe('ChatBot', () => {
 
     it('should show inputted value properly', () => {
       expect(wrapper.text()).to.contain('You inputted: some input');
+    });
+  });
+
+  describe('Save step value in secured chat', () => {
+    let axiosMock;
+    let clock;
+
+    beforeEach(() => {
+      clock = sinon.useFakeTimers();
+      axiosMock = new MockAdapter(axios);
+    });
+
+    afterEach(() => {
+      clock.restore();
+      axiosMock.restore();
+    });
+
+    it('should save value number 0', async () => {
+      const nextStepUrl = 'api';
+      const chatBot = (
+        <ChatBot nextStepUrl={nextStepUrl} steps={[]} botDelay={0} customDelay={0} userDelay={0} />
+      );
+      axiosMock.reset();
+      axiosMock
+        .onGet(nextStepUrl, { params: { stepId: undefined, value: undefined, readOnly: false } })
+        .replyOnce(200, [
+          {
+            id: '1',
+            message: 'First Message',
+            trigger: '{input}'
+          },
+          {
+            id: '{input}',
+            format: 'positive_numeric',
+            user: true
+          }
+        ]);
+
+      axiosMock.onGet(nextStepUrl, { params: { stepId: '{input}', value: '0', readOnly: false } })
+        .replyOnce(200, [
+        {
+          id: '{input}',
+          user: true,
+          message: '0',
+          value: '0',
+          trigger: null
+        }
+      ]);
+
+      const wrapper = mount(chatBot);
+
+      await clock.runAllAsync();
+      wrapper.update();
+
+      wrapper.setState({ inputValue: '0' });
+      wrapper.find(InputElementSelector).simulate('keyPress', { key: 'Enter' });
+      await clock.runAllAsync();
+      wrapper.update();
+      expect(wrapper.find(ChatBot).text()).to.contain('0');
+
+      wrapper.unmount();
+    });
+  });
+
+  describe('Refresh in secured chat', () => {
+    let axiosMock;
+    let clock;
+
+    beforeEach(() => {
+      clock = sinon.useFakeTimers();
+      axiosMock = new MockAdapter(axios);
+    });
+
+    afterEach(() => {
+      clock.restore();
+      axiosMock.restore();
+    });
+
+    it('should throw error when no steps are returned', async () => {
+      const nextStepUrl = 'api';
+
+      const chatBot = (
+        <ErrorBoundary>
+          <ChatBot
+            nextStepUrl={nextStepUrl}
+            steps={[]}
+            botDelay={0}
+            customDelay={0}
+            userDelay={0}
+          />
+        </ErrorBoundary>
+      );
+      axiosMock
+        .onGet(nextStepUrl, { params: { stepId: undefined, value: undefined, readOnly: false } })
+        .replyOnce(200, []);
+
+      const wrapper = mount(chatBot);
+      await clock.runAllAsync();
+      // eslint-disable-next-line no-unused-expressions
+      expect(wrapper.instance().state.error).to.be.instanceof(Error);
+    });
+
+    it('should render properly when last step is a text step', async () => {
+      const nextStepUrl = 'api';
+      const chatBot = (
+        <ChatBot nextStepUrl={nextStepUrl} steps={[]} botDelay={0} customDelay={0} userDelay={0} />
+      );
+
+      axiosMock
+        .onGet(nextStepUrl, { params: { stepId: undefined, value: undefined, readOnly: false } })
+        .replyOnce(200, [
+          {
+            id: '1',
+            message: 'First message',
+            trigger: '2'
+          },
+          {
+            id: '2',
+            message: 'Second message',
+            trigger: '3'
+          }
+        ]);
+
+      axiosMock.onGet(nextStepUrl, { params: { stepId: '3', value: undefined, readOnly: false } })
+        .replyOnce(200, [
+        {
+          id: '3',
+          message: "Third message, which wasn't rendered before",
+          end: true
+        }
+      ]);
+
+      const wrapper = mount(chatBot);
+
+      await clock.runAllAsync();
+      wrapper.update();
+
+      expect(wrapper.text()).to.contain('First message');
+      expect(wrapper.text()).to.contain('Second message');
+
+      await clock.runAllAsync();
+      wrapper.update();
+
+      expect(wrapper.text()).to.contain("Third message, which wasn't rendered before");
+
+      wrapper.unmount();
+    });
+
+    it('should render properly when last step is a option step', async () => {
+      const nextStepUrl = 'api';
+      const chatBot = (
+        <ChatBot nextStepUrl={nextStepUrl} steps={[]} botDelay={0} customDelay={0} userDelay={0} />
+      );
+
+      axiosMock
+        .onGet(nextStepUrl, { params: { stepId: undefined, value: undefined, readOnly: false} })
+        .replyOnce(200, [
+          {
+            id: '1',
+            message: 'First Message',
+            trigger: '2'
+          },
+          {
+            id: '2',
+            options: [
+              {
+                label: 'Option 1',
+                value: 'option1'
+              },
+              {
+                label: 'Option 2',
+                value: 'option2'
+              }
+            ]
+          }
+        ]);
+
+      const wrapper = mount(chatBot);
+
+      await clock.runAllAsync();
+      wrapper.update();
+
+      expect(wrapper.text()).to.contain('First Message');
+      const options = wrapper.find(OptionElementSelector);
+      expect(options.length).to.equal(2);
+      expect(options.at(0).text()).to.equal('Option 1');
+      expect(options.at(1).text()).to.equal('Option 2');
+
+      wrapper.unmount();
+    });
+
+    it('should render properly when last step is a user step', async () => {
+      const nextStepUrl = 'api';
+      const chatBot = (
+        <ChatBot nextStepUrl={nextStepUrl} steps={[]} botDelay={0} customDelay={0} userDelay={0} />
+      );
+      axiosMock.reset();
+      axiosMock
+        .onGet(nextStepUrl, { params: { stepId: undefined, value: undefined, readOnly: false } })
+        .replyOnce(200, [
+          {
+            id: '1',
+            message: 'First Message',
+            trigger: '{input}'
+          },
+          {
+            id: '{input}',
+            user: true
+          }
+        ]);
+
+      axiosMock
+        .onGet(nextStepUrl, { params: { stepId: '{input}', value: '"Some Input"', readOnly: false } })
+        .replyOnce(200, [
+          {
+            id: '{input}',
+            user: true,
+            message: 'Some Input',
+            value: 'Some Input',
+            trigger: null
+          }
+        ]);
+
+      const wrapper = mount(chatBot);
+
+      await clock.runAllAsync();
+      wrapper.update();
+
+      expect(wrapper.text()).to.contain('First Message');
+
+      wrapper.setState({ inputValue: 'Some Input' });
+      wrapper.find(InputElementSelector).simulate('keyPress', { key: 'Enter' });
+      await clock.runAllAsync();
+      wrapper.update();
+      expect(wrapper.text()).to.contain('Some Input');
+
+      wrapper.unmount();
+    });
+
+    it('should render properly when last step is a multiple choice step', async () => {
+      const nextStepUrl = 'api';
+      const chatBot = (
+        <ChatBot nextStepUrl={nextStepUrl} steps={[]} botDelay={0} customDelay={0} userDelay={0} />
+      );
+
+      axiosMock
+        .onGet(nextStepUrl, { params: { stepId: undefined, value: undefined, readOnly: false } })
+        .replyOnce(200, [
+          {
+            id: '1',
+            message: 'First Message',
+            trigger: '{choices}'
+          },
+          {
+            id: '{choices}',
+            choices: [
+              {
+                label: 'Choice 1',
+                value: 'choice1'
+              },
+              {
+                label: 'Choice 2',
+                value: 'choice2'
+              }
+            ]
+          }
+        ]);
+
+      const wrapper = mount(chatBot);
+
+      await clock.runAllAsync();
+      wrapper.update();
+
+      expect(wrapper.text()).to.contain('First Message');
+      const choices = wrapper.find(MultipleChoiceElementSelector);
+      expect(choices.length).to.equal(2);
+      expect(choices.at(0).text()).to.equal('Choice 1');
+      expect(choices.at(1).text()).to.equal('Choice 2');
+      expect(wrapper.find(MultipleSubmitElementSelector).length).to.equal(1);
+
+      wrapper.unmount();
     });
   });
 });

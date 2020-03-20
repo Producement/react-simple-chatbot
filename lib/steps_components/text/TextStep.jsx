@@ -20,17 +20,15 @@ class TextStep extends Component {
 
   componentDidMount() {
     const { step, speak, previousValue, triggerNextStep } = this.props;
-    const { component, delay, waitAction } = step;
+    const { component, waitAction } = step;
     const isComponentWaitingUser = component && waitAction;
 
-    setTimeout(() => {
-      this.setState({ loading: false }, () => {
-        if (!isComponentWaitingUser && !step.rendered) {
-          triggerNextStep();
-        }
-        speak(step, previousValue);
-      });
-    }, delay);
+    this.setState({ loading: false }, () => {
+      if (!isComponentWaitingUser && !step.rendered) {
+        triggerNextStep();
+      }
+      speak(step, previousValue);
+    });
   }
 
   getMessage = () => {
@@ -125,6 +123,7 @@ class TextStep extends Component {
         <ImageContainer className="rsc-ts-image-container" user={user}>
           {isFirst && showAvatar && (
             <Image
+              animated={step.animated}
               className="rsc-ts-image"
               style={avatarStyle}
               showAvatar={showAvatar}
@@ -135,6 +134,7 @@ class TextStep extends Component {
           )}
         </ImageContainer>
         <Bubble
+          animated={step.animated}
           className="rsc-ts-bubble"
           style={bubbleStyle}
           user={user}
