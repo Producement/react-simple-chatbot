@@ -131,7 +131,7 @@ const ThemedExample = () => (
         customDelay={500}
         cache={true}
         parseStep={parseStep}
-        nextStepUrl='/api/v1/chats/1fbjO6mJVyCCMOZdQO90qLfXCxghoX4Ps/models/null/modelKey/null/states/saladus/nextStep/'
+        nextStepUrl='/api/v1/chats/chatId/models/null/modelKey/null/states/stateId/nextStep'
       />
     </React.StrictMode>
   </ThemeProvider>
