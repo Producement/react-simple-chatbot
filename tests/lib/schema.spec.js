@@ -37,7 +37,7 @@ describe('schema', () => {
   });
 
   it('should not throw error to a user step', () => {
-    const step = { id: '1', user: true, end: true };
+    const step = { id: '1', variable: '{test1}', user: true, end: true };
     expect(() => {
       schema.parse(step);
     }).to.not.throw();
@@ -59,7 +59,7 @@ describe('schema', () => {
   });
 
   it('should not throw error to a value step', () => {
-    const step = { id: '1', value: '2' };
+    const step = { id: '1', variable: '{test1}', value: '2' };
     expect(() => {
       schema.parse(step);
     }).to.not.throw();
@@ -108,7 +108,7 @@ describe('schema', () => {
     }).to.not.throw();
   });
   it('should not throw error with metadata', () => {
-    const step = { id: '1', message: 'Test', metadata: { data: 'test' } };
+    const step = { id: '1', variable: '{test}', message: 'Test', metadata: { data: 'test' } };
     expect(() => {
       schema.parse(step);
     }).to.not.throw();
@@ -116,7 +116,12 @@ describe('schema', () => {
     expect(resultStep).to.be.equal(step);
   });
   it('should not throw error with inputAttributes', () => {
-    const step = { id: '1', message: 'Test', inputAttributes: { autoComplete: 'firstname' } };
+    const step = {
+      id: '1',
+      variable: '{test}',
+      message: 'Test',
+      inputAttributes: { autoComplete: 'firstname' }
+    };
     expect(() => {
       schema.parse(step);
     }).to.not.throw();
