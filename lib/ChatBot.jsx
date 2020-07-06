@@ -1160,26 +1160,23 @@ class ChatBot extends Component {
             )}
           </Content>
           <Footer className="rsc-footer" style={footerStyle}>
-            {!currentStep.hideInput && (
-              <Input
-                type="textarea"
-                style={inputStyle}
-                ref={this.setInputRef}
-                className="rsc-input"
-                placeholder={inputInvalid ? '' : inputPlaceholder}
-                onKeyPress={this.handleKeyPress}
-                onChange={this.onValueChange}
-                value={inputValue}
-                floating={floating}
-                invalid={inputInvalid}
-                disabled={disabled || readOnly}
-                hasButton={!hideSubmitButton}
-                {...inputAttributesOverride}
-              />
-            )}
+            <Input
+              type="textarea"
+              style={inputStyle}
+              ref={this.setInputRef}
+              className="rsc-input"
+              placeholder={disabled || inputInvalid ? '' : inputPlaceholder}
+              onKeyPress={this.handleKeyPress}
+              onChange={this.onValueChange}
+              value={inputValue}
+              floating={floating}
+              invalid={inputInvalid}
+              disabled={disabled || readOnly}
+              hasButton={!hideSubmitButton}
+              {...inputAttributesOverride}
+            />
             <div style={controlStyle} className="rsc-controls">
-              {!currentStep.hideInput && !currentStep.hideExtraControl && customControl}
-              {!currentStep.hideInput && !hideSubmitButton && (
+              {!disabled && (
                 <SubmitButton
                   className="rsc-submit-button"
                   style={submitButtonStyle}
