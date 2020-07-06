@@ -1092,9 +1092,8 @@ class ChatBot extends Component {
       </Header>
     );
 
-    let customControl;
     if (extraControl !== undefined) {
-      customControl = React.cloneElement(extraControl, {
+      React.cloneElement(extraControl, {
         disabled,
         speaking,
         invalid: inputInvalid

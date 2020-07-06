@@ -314,11 +314,6 @@ describe('ChatBot', () => {
         ]}
       />
     );
-
-    it('should be rendered without input', () => {
-      wrapper.update();
-      expect(wrapper.find(InputElementSelector)).to.have.length(0);
-    });
   });
 
   describe('Metadata', () => {
@@ -1532,10 +1527,6 @@ describe('ChatBot', () => {
 
     after(() => {
       clock.restore();
-    });
-
-    it('should be rendered with an extra control beside submit button', () => {
-      expect(wrapper.find('div.rsc-controls button.my-button')).to.have.length(1);
     });
 
     it('the extra control should be hidden', async () => {
