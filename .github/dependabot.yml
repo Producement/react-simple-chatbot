@@ -1,0 +1,33 @@
+version: 2
+updates:
+- package-ecosystem: npm
+  directory: "/"
+  schedule:
+    interval: monthly
+    time: "03:00"
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: "@babel/preset-env"
+    versions:
+    - 7.12.11
+  - dependency-name: "@babel/preset-react"
+    versions:
+    - 7.12.10
+  - dependency-name: mocha
+    versions:
+    - 8.2.1
+  - dependency-name: "@babel/runtime"
+    versions:
+    - 7.12.5
+  - dependency-name: "@babel/plugin-proposal-class-properties"
+    versions:
+    - 7.12.1
+  - dependency-name: enzyme-adapter-react-16
+    versions:
+    - 1.15.5
+  - dependency-name: lodash
+    versions:
+    - 4.17.20
+  - dependency-name: elliptic
+    versions:
+    - 6.5.3
